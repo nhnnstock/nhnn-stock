@@ -41,7 +41,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#2563EB !impor
   document.getElementById('pwa-manifest').href=URL.createObjectURL(b);
 })();
 if('serviceWorker' in navigator){
-  const sw="const C='nhnn-v3';self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});";
+  const sw="const C='nhnn-v5';self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});";
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'}))).catch(()=>{});
 }
 </script>
@@ -74,13 +74,13 @@ const store={
   async set(k,v){
     try{
       const db=await openDB();
-      return new Promise((res,rej)=>{
+      await new Promise((res,rej)=>{
         const tx=db.transaction('kv','readwrite');
         tx.objectStore('kv').put(v,k);
-        tx.oncomplete=res;
-        tx.onerror=()=>rej(tx.error);
+        tx.oncomplete=()=>res();
+        tx.onerror=()=>res();
       });
-    }catch{}
+    }catch(e){console.error('store.set:',e);}
   },
 };
 
@@ -332,9 +332,12 @@ function SettingsScreen({users,updateUsers,navigate,addToast,onChangePIN}){
   const[isMgr,setIsMgr]=useState(false);
   const addUser=async()=>{
     if(!name.trim()||!email.trim()){addToast('Name and email required','error');return;}
-    await updateUsers([...users,{id:uid(),name:name.trim(),email:email.trim(),isManager:isMgr}]);
-    setName('');setEmail('');setIsMgr(false);
-    addToast(`${name} added`,'success');
+    try{
+      const nm=name.trim();
+      await updateUsers([...(users||[]),{id:uid(),name:nm,email:email.trim(),isManager:isMgr}]);
+      setName('');setEmail('');setIsMgr(false);
+      addToast(nm+' added','success');
+    }catch(e){console.error(e);addToast('Error saving user','error');}
   };
   const removeUser=async id=>{await updateUsers(users.filter(u=>u.id!==id));addToast('User removed','success');};
   return(
@@ -349,8 +352,8 @@ function SettingsScreen({users,updateUsers,navigate,addToast,onChangePIN}){
             <div style={{display:'flex',flexDirection:'column',gap:12}}>
               {[{key:'users',icon:'👥',label:'Manage Users',desc:'Add, view or remove staff members'},
                 {key:'pin',icon:'🔐',label:'Change PIN',desc:'Update your 4-digit app PIN'},{key:'info',icon:'ℹ️',label:'About App',desc:'Version info and documentation'}].map(item=>(
-                <button key={item.key} onClick={()=>setView(item.key)}
-                  style={{...S.card,border:`1px solid ${C.bdr}`,borderRadius:12,cursor:'pointer',display:'flex',alignItems:'center',gap:16,fontFamily:'inherit',padding:18}}
+                <button key={item.key} onClick={()=>item.key==='pin'?onChangePIN():setView(item.key)}
+                  style={{...S.card,border:'1.5px solid #E2E8F0',borderRadius:12,cursor:'pointer',display:'flex',alignItems:'center',gap:16,fontFamily:'inherit',padding:18}}
                   onMouseEnter={e=>e.currentTarget.style.borderColor='#2563EB'} onMouseLeave={e=>e.currentTarget.style.borderColor='#E2E8F0'}>
                   <span style={{fontSize:28}}>{item.icon}</span>
                   <div style={{textAlign:'left'}}><div style={{color:C.txt,fontWeight:700,fontSize:15}}>{item.label}</div><div style={{color:C.sub,fontSize:13,marginTop:2}}>{item.desc}</div></div>
@@ -369,7 +372,7 @@ function SettingsScreen({users,updateUsers,navigate,addToast,onChangePIN}){
                 <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" type="email" style={S.inp}/>
                 <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}}>
                   <input type="checkbox" checked={isMgr} onChange={e=>setIsMgr(e.target.checked)} style={{width:16,height:16,cursor:'pointer'}}/>
-                  <span style={{color:C.txt,fontSize:14}}>Manager (gets new part & correction alerts)</span>
+                  <span style={{color:C.txt,fontSize:14}}>Manager (gets new part &amp; correction alerts)</span>
                 </label>
                 <button onClick={addUser} style={{...S.btn,background:C.gold,color:'#FFFFFF',padding:'12px 20px'}}>Add User</button>
               </div>
@@ -379,7 +382,7 @@ function SettingsScreen({users,updateUsers,navigate,addToast,onChangePIN}){
               {users.map(u=>(
                 <div key={u.id} style={{...S.card,display:'flex',alignItems:'center',gap:14}}>
                   <div style={{width:40,height:40,borderRadius:'50%',background:u.isManager?'#DBEAFE':'#D1FAE5',border:`1.5px solid ${u.isManager?'#3B82F6':'#10B981'}`,display:'flex',alignItems:'center',justifyContent:'center',color:u.isManager?'#1D4ED8':'#059669',fontWeight:700,fontSize:14,flexShrink:0}}>
-                    {u.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)}
+                    {((u.name)||'?').split(' ').map(n=>n[0]||'').join('').toUpperCase().slice(0,2)||'?'}
                   </div>
                   <div style={{flex:1}}>
                     <div style={{color:C.txt,fontWeight:600,fontSize:14}}>{u.name}{u.isManager&&<span style={{background:'#DBEAFE',color:'#1D4ED8',fontSize:11,padding:'2px 8px',borderRadius:4,marginLeft:6,fontWeight:600}}>Manager</span>}</div>
@@ -495,7 +498,7 @@ function UsePartScreen({parts,users,images,updateParts,navigate,addToast}){
           </div>
         ))}
         <button onClick={()=>setItems(prev=>[...prev,{id:uid(),part:null,qty:1}])} style={{...S.btn,background:'#FFFFFF',border:'2px dashed #CBD5E1',color:'#94A3B8',padding:'12px 20px',width:'100%',marginBottom:16,borderRadius:10}}>+ Add Another Part</button>
-        <button onClick={submit} disabled={busy} style={{...S.btn,background:C.gold,color:'#FFFFFF',padding:'14px 20px',width:'100%',fontSize:15,opacity:busy?.7:1}}>{busy?'Processing...':'✓ Confirm & Send Email'}</button>
+        <button onClick={submit} disabled={busy} style={{...S.btn,background:C.gold,color:'#FFFFFF',padding:'14px 20px',width:'100%',fontSize:15,opacity:busy?.7:1}}>{busy?'Processing...':'✓ Confirm &amp; Send Email'}</button>
       </div>
     </div>
   );
@@ -684,7 +687,7 @@ function StockCorrectionScreen({parts,users,images,setImages,updateParts,navigat
               <label style={{display:'block',color:C.sub,fontSize:12,fontWeight:600,marginBottom:5}}>REASON FOR CORRECTION</label>
               <textarea value={reason} onChange={e=>setReason(e.target.value)} placeholder="e.g. Audit discrepancy, damaged goods..." rows={3} style={{...S.inp,resize:'vertical'}}/>
             </div>
-            <button onClick={submit} disabled={busy} style={{...S.btn,background:C.ora,color:'#FFFFFF',padding:'14px 20px',width:'100%',fontSize:15,opacity:busy?.7:1}}>{busy?'Saving...':'⚠️ Apply Correction & Notify Manager'}</button>
+            <button onClick={submit} disabled={busy} style={{...S.btn,background:C.ora,color:'#FFFFFF',padding:'14px 20px',width:'100%',fontSize:15,opacity:busy?.7:1}}>{busy?'Saving...':'⚠️ Apply Correction &amp; Notify Manager'}</button>
           </div>
         )}
       </div>
@@ -807,8 +810,8 @@ function App() {
     setToasts(prev => [...prev, { id, msg, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
   };
-  const updateParts = async (np) => { await store.set("parts", np); setParts(np); };
-  const updateUsers = async (nu) => { await store.set("users", nu); setUsers(nu); };
+  const updateParts = async (np) => { await store.set("parts", np); setParts([...np]); };
+  const updateUsers = async (nu) => { await store.set("users", nu); setUsers([...nu]); };
   const navigate = (s) => {
     if (s === "exportExcel") { exportExcel(parts, addToast); return; }
     setScreen(s);
