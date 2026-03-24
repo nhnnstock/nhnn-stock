@@ -283,7 +283,7 @@ function PartSearch({parts,images,label,onSelect}){
               <div key={p.id} onClick={()=>pick(p)}
                 onMouseEnter={e=>e.currentTarget.style.background='#F8FAFC'}
                 onMouseLeave={e=>e.currentTarget.style.background='transparent'}
-                style={{display:'flex',alignItems:'center',gap:14,padding:'12px 16px',cursor:'pointer',borderBottom:'1px solid #F1F5F9',transition:'background .12s'}}>
+                style={{display:'flex',alignItems:'flex-start',gap:14,padding:'14px 16px',cursor:'pointer',borderBottom:'1px solid #F1F5F9',transition:'background .12s'}}>
                 {(images&&images[p.partCode])
                   ?<img src={images[p.partCode]} style={{width:72,height:72,objectFit:'cover',borderRadius:12,flexShrink:0,border:'1.5px solid #E2E8F0'}}/>
                   :<div style={{width:72,height:72,background:'#F1F5F9',borderRadius:12,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>📦</div>}
@@ -321,34 +321,29 @@ function HomeScreen({navigate,users}){
         <div style={{position:'absolute',bottom:'8%',right:'-5%',width:320,height:320,borderRadius:'50%',background:'radial-gradient(circle,#FED7AA,transparent 70%)',opacity:.5}}/>
       </div>
       <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',flex:1}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'20px 24px'}}>
-          <div style={{display:'flex',alignItems:'center',gap:12}}>
-            <img src={LOGO_B64} style={{width:46,height:46,borderRadius:'50%',border:'2.5px solid '+C.blue,boxShadow:'0 0 0 3px rgba(37,99,235,.12)',objectFit:'cover'}} alt="NHNN"/>
-            <div>
-              <div style={{fontWeight:800,fontSize:15,color:C.txt,letterSpacing:'-0.3px'}}>NHNN Stock Control</div>
-              <div style={{color:C.sub,fontSize:11}}>National Hospital for Neurology and Neurosurgery</div>
-            </div>
+        <button onClick={()=>navigate('settings')} style={{position:'absolute',top:20,right:20,background:'rgba(255,255,255,.8)',border:'1.5px solid #E2E8F0',borderRadius:12,color:C.sub,cursor:'pointer',padding:'10px 12px',fontSize:18,zIndex:2}}>⚙️</button>
+        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'20px 24px 32px'}}>
+          <div style={{textAlign:'center',marginBottom:28}}>
+            <img src={LOGO_B64} alt="NHNN" style={{width:90,height:90,borderRadius:'50%',objectFit:'cover',border:'3px solid '+C.blue,boxShadow:'0 0 0 4px rgba(37,99,235,.1)',display:'block',margin:'0 auto 16px'}}/>
+            <h1 style={{fontSize:26,fontWeight:800,color:C.txt,margin:'0 0 4px',letterSpacing:'-0.5px'}}>NHNN Stock Control</h1>
+            <p style={{color:C.sub,fontSize:13,margin:'0 0 4px'}}>National Hospital for Neurology and Neurosurgery</p>
+            <p style={{color:C.sub,fontSize:12}}>{new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
           </div>
-          <button onClick={()=>navigate('settings')} style={{...btn,background:'rgba(255,255,255,.8)',border:'1.5px solid #E2E8F0',color:C.sub,padding:'10px 12px',fontSize:18}}>⚙️</button>
-        </div>
-        <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',padding:'0 40px 40px',maxWidth:900,margin:'0 auto',width:'100%'}}>
-          <h1 style={{fontSize:42,fontWeight:800,color:C.txt,margin:'0 0 8px',letterSpacing:'-1.5px',lineHeight:1.1}}>What would you<br/>like to do?</h1>
-          <p style={{color:C.sub,fontSize:14,margin:'0 0 28px'}}>{new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,width:'100%',maxWidth:520}}>
             {tiles.map(t=>(
               <button key={t.key} onClick={()=>navigate(t.key)}
-                style={{background:'rgba(255,255,255,.75)',backdropFilter:'blur(12px)',border:'1.5px solid rgba(255,255,255,.9)',borderRadius:24,padding:'32px 28px',cursor:'pointer',textAlign:'left',fontFamily:'inherit',boxShadow:'0 2px 12px rgba(15,23,42,.08)',transition:'all .2s'}}
+                style={{background:'rgba(255,255,255,.75)',backdropFilter:'blur(12px)',border:'1.5px solid rgba(255,255,255,.9)',borderRadius:20,padding:'24px 20px',cursor:'pointer',textAlign:'center',fontFamily:'inherit',boxShadow:'0 2px 12px rgba(15,23,42,.08)',transition:'all .2s'}}
                 onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 12px 28px '+t.accent+'30';e.currentTarget.style.borderColor=t.accent;}}
                 onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='0 2px 12px rgba(15,23,42,.08)';e.currentTarget.style.borderColor='rgba(255,255,255,.9)';}}>
-                <div style={{width:56,height:56,borderRadius:16,background:t.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,marginBottom:18,border:'1px solid '+t.accent+'20'}}>{t.icon}</div>
-                <div style={{color:C.txt,fontWeight:800,fontSize:18,marginBottom:6,letterSpacing:'-0.3px'}}>{t.label}</div>
-                <div style={{color:C.sub,fontSize:14}}>{t.desc}</div>
+                <div style={{width:52,height:52,borderRadius:14,background:t.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,marginBottom:12,border:'1px solid '+t.accent+'20',margin:'0 auto 12px'}}>{t.icon}</div>
+                <div style={{color:C.txt,fontWeight:700,fontSize:15,marginBottom:4}}>{t.label}</div>
+                <div style={{color:C.sub,fontSize:12}}>{t.desc}</div>
               </button>
             ))}
           </div>
-          {(!users||users.length===0)&&<div style={{background:'rgba(255,251,235,.9)',border:'1.5px solid #FCD34D',borderRadius:12,padding:'12px 16px',fontSize:13,color:'#92400E',textAlign:'center',marginTop:18}}>⚠️ No users yet — go to Settings to add staff.</div>}
+          {(!users||users.length===0)&&<div style={{background:'rgba(255,251,235,.9)',border:'1.5px solid #FCD34D',borderRadius:12,padding:'12px 16px',fontSize:13,color:'#92400E',textAlign:'center',marginTop:18,maxWidth:520,width:'100%'}}>⚠️ No users yet — go to Settings to add staff.</div>}
         </div>
-        <p style={{color:'#94A3B8',fontSize:11,textAlign:'center',paddingBottom:16,position:'relative',zIndex:1}}>NHNN Stock Control v1.0</p>
+        <p style={{color:'#94A3B8',fontSize:11,textAlign:'center',paddingBottom:16}}>NHNN Stock Control v1.0</p>
       </div>
     </div>
   );
@@ -504,8 +499,8 @@ function UsePartScreen({parts,users,images,navigate,toast}){
             <PartSearch parts={parts} images={images} label="Search by code, name or number" onSelect={p=>setItems(prev=>prev.map(i=>i.id===it.id?{...i,part:p,qty:1}:i))}/>
             {it.part&&(
               <div style={{marginTop:12,background:'#F8FAFC',border:'1.5px solid #E2E8F0',borderRadius:12,padding:12,display:'flex',gap:12,alignItems:'center'}}>
-                {(images&&images[it.part.partCode])?<img src={images[it.part.partCode]} style={{width:56,height:56,objectFit:'cover',borderRadius:8,flexShrink:0,border:'1.5px solid #E2E8F0'}}/>
-                :<div style={{width:56,height:56,background:'#F1F5F9',borderRadius:8,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22}}>📦</div>}
+                {(images&&images[it.part.partCode])?<img src={images[it.part.partCode]} style={{width:80,height:80,objectFit:'cover',borderRadius:12,flexShrink:0,border:'1.5px solid #E2E8F0'}}/>
+                :<div style={{width:80,height:80,background:'#F1F5F9',borderRadius:12,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>📦</div>}
                 <div style={{flex:1}}>
                   <div style={{fontWeight:700,color:C.txt,fontSize:14}}>{it.part.partName}</div>
                   <div style={{color:C.sub,fontSize:12}}>{it.part.partCode} · Bin: {it.part.binNumber}</div>
