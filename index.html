@@ -359,12 +359,22 @@ function SettingsScreen({users,saveUsers:su,navigate,toast,resetPin}){
   const [view,setView]=useState('menu');
   const [name,setName]=useState('');
   const [email,setEmail]=useState('');
+  const [badge,setBadge]=useState('');
   const [mgr,setMgr]=useState(false);
+  const [pwInput,setPwInput]=useState('');
+  const [pwErr,setPwErr]=useState('');
+  const [pwUnlocked,setPwUnlocked]=useState(false);
+  const MANAGER_PW='2022';
+  const checkPw=()=>{
+    if(pwInput===MANAGER_PW){setPwUnlocked(true);setPwErr('');}
+    else{setPwErr('Incorrect password');setPwInput('');}
+  };
   const addUser=async()=>{
     if(!name.trim()||!email.trim()){toast('Name and email required','error');return;}
+    if(!badge.trim()){toast('Badge number required','error');return;}
     const nm=name.trim();
-    await su([...(users||[]),{id:uid(),name:nm,email:email.trim(),isManager:mgr}]);
-    setName('');setEmail('');setMgr(false);
+    await su([...(users||[]),{id:uid(),name:nm,email:email.trim(),badge:badge.trim(),isManager:mgr}]);
+    setName('');setEmail('');setBadge('');setMgr(false);
     toast(nm+' added','success');
   };
   const removeUser=async id=>{ await su((users||[]).filter(u=>u.id!==id)); toast('User removed','success'); };
@@ -376,8 +386,9 @@ function SettingsScreen({users,saveUsers:su,navigate,toast,resetPin}){
           <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 24px',letterSpacing:'-0.8px'}}>Settings</h2>
           {[{k:'users',icon:'👥',label:'Manage Users',desc:'Add or remove staff'},
             {k:'pin',  icon:'🔐',label:'Change PIN',  desc:'Update your 4-digit PIN'},
-            {k:'info', icon:'ℹ️',label:'About',       desc:'Version and column guide'}].map(m=>(
-            <button key={m.k} onClick={()=>m.k==='pin'?resetPin():setView(m.k)}
+            {k:'info', icon:'ℹ️',label:'About',       desc:'Version and column guide'},
+            {k:'faq',  icon:'❓',label:'FAQ',          desc:'How to use the app'}].map(m=>(
+            <button key={m.k} onClick={()=>m.k==='pin'?resetPin():m.k==='users'&&!pwUnlocked?setView('pwcheck'):setView(m.k)}
               style={{...card,display:'flex',alignItems:'center',gap:20,width:'100%',cursor:'pointer',fontFamily:'inherit',textAlign:'left',marginBottom:14,transition:'all .18s',padding:22}}
               onMouseEnter={e=>e.currentTarget.style.borderColor=C.blue}
               onMouseLeave={e=>e.currentTarget.style.borderColor='#E2E8F0'}>
@@ -386,6 +397,16 @@ function SettingsScreen({users,saveUsers:su,navigate,toast,resetPin}){
             </button>
           ))}
         </>}
+        {view==='pwcheck'&&<>
+          <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 20px',letterSpacing:'-0.8px'}}>Manager Access</h2>
+          <div style={{...card}}>
+            <p style={{color:C.sub,fontSize:14,margin:'0 0 16px'}}>Enter the manager password to access user management.</p>
+            <input value={pwInput} onChange={e=>setPwInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&checkPw()}
+              placeholder="Manager password" type="password" style={{...inp,marginBottom:10}}/>
+            {pwErr&&<p style={{color:C.red,fontSize:13,margin:'0 0 10px'}}>{pwErr}</p>}
+            <button onClick={checkPw} style={{...btn,background:C.blue,color:'#fff',padding:'12px 20px',width:'100%'}}>Unlock</button>
+          </div>
+        </>}
         {view==='users'&&<>
           <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 24px',letterSpacing:'-0.8px'}}>Manage Users</h2>
           <div style={{...card,marginBottom:16}}>
@@ -393,6 +414,7 @@ function SettingsScreen({users,saveUsers:su,navigate,toast,resetPin}){
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
               <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full Name" style={inp}/>
               <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" type="email" style={inp}/>
+              <input value={badge} onChange={e=>setBadge(e.target.value)} placeholder="Badge / ID Number" style={inp}/>
               <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',padding:'2px 0'}}>
                 <input type="checkbox" checked={mgr} onChange={e=>setMgr(e.target.checked)} style={{accentColor:C.blue,width:16,height:16}}/>
                 <span style={{color:C.txt,fontSize:14}}>Manager (receives new part + correction alerts)</span>
@@ -411,10 +433,36 @@ function SettingsScreen({users,saveUsers:su,navigate,toast,resetPin}){
                   {u.isManager&&<span style={{background:'#DBEAFE',color:'#1D4ED8',fontSize:11,padding:'2px 8px',borderRadius:4,marginLeft:6,fontWeight:600}}>Manager</span>}
                 </div>
                 <div style={{color:C.sub,fontSize:12,marginTop:2}}>{u.email}</div>
+                {u.badge&&<div style={{color:'#94A3B8',fontSize:11,marginTop:1}}>Badge: {u.badge}</div>}
               </div>
               <button onClick={()=>removeUser(u.id)} style={{...btn,background:'#FEF2F2',color:C.red,border:'1px solid #FEE2E2',padding:'6px 12px',fontSize:12}}>Remove</button>
             </div>
           ))}
+        </>}
+        {view==='faq'&&<>
+          <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 20px',letterSpacing:'-0.8px'}}>FAQ</h2>
+          <div style={{display:'flex',flexDirection:'column',gap:12}}>
+            {[
+              {q:'How do I use a part?',a:'Go to Use Part, scan or type your badge number, search for the part, set quantity, press Confirm. An email confirmation is sent to you automatically.'},
+              {q:'What happens when stock gets low?',a:'When stock hits 1 above minimum, at minimum, below minimum, or runs out — an automatic email alert goes to all staff.'},
+              {q:'How do I add a new part?',a:'Add Part, then Add New Part. Fill in Part Code, Name, Bin Number, Supplier, Stock levels. Add a photo optionally. Managers are notified by email.'},
+              {q:'How do I restock a part?',a:'Add Part, then Restock Existing Part. Search for the part, enter quantity being added, press Confirm Restock.'},
+              {q:'How do I correct a stock count?',a:'Add Part, then Stock Correction. Search for the part, update any details or quantity, enter a reason, press Apply Correction. Managers are notified.'},
+              {q:'How do I delete a part?',a:'Add Part, Stock Correction, search for the part, scroll down and press Delete This Part Permanently. This cannot be undone.'},
+              {q:'How do I import from Excel?',a:'Your file must have these column headers: Part Code, Part Number, Bin Number, Part Name, Supplier, Current Stock, Minimum Stock. Import Excel, upload the file, check the preview, press Confirm.'},
+              {q:'How do I export stock?',a:'Export Stock, then either Download Excel or type an email address and press Email Stock Summary.'},
+              {q:'What is my badge number?',a:'The ID number on your hospital badge. Scan it or type it in the Use Part screen to identify yourself.'},
+              {q:'How do I add a user?',a:'Settings, Manage Users, enter the manager password, fill in name, email and badge number, press Add User.'},
+              {q:'What if I forget my PIN?',a:'Settings, Change PIN. You will be prompted to set a new one.'},
+              {q:'Does the app work offline?',a:'No — an internet connection is required as all data is stored in the cloud.'},
+              {q:'The app is stuck on connecting — what do I do?',a:'Check your internet connection. If connected, press F12, go to Application, Storage, Clear site data, then refresh the page.'},
+            ].map((item,i)=>(
+              <div key={i} style={{...card,padding:'16px 20px'}}>
+                <div style={{fontWeight:700,color:C.txt,fontSize:14,marginBottom:8}}>{item.q}</div>
+                <div style={{color:C.sub,fontSize:13,lineHeight:1.6}}>{item.a}</div>
+              </div>
+            ))}
+          </div>
         </>}
         {view==='info'&&<>
           <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 24px',letterSpacing:'-0.8px'}}>About</h2>
@@ -443,6 +491,8 @@ function SettingsScreen({users,saveUsers:su,navigate,toast,resetPin}){
 /* ── Use Part ── */
 function UsePartScreen({parts,users,images,navigate,toast}){
   const [userId,setUserId]=useState('');
+  const [badgeScan,setBadgeScan]=useState('');
+  const [foundUser,setFoundUser]=useState(null);
   const [items,setItems]=useState([{id:uid(),part:null,qty:1}]);
   const [busy,setBusy]=useState(false);
   const setQty=(id,q)=>setItems(prev=>prev.map(i=>i.id===id?{...i,qty:Math.max(1,Math.min(q,i.part?i.part.currentStock:9999))}:i));
@@ -480,7 +530,7 @@ function UsePartScreen({parts,users,images,navigate,toast}){
     }
     setBusy(false);
     toast('Parts recorded + emails sent!','success');
-    setItems([{id:uid(),part:null,qty:1}]);setUserId('');
+    setItems([{id:uid(),part:null,qty:1}]);setUserId('');setBadgeScan('');setFoundUser(null);
   };
   return(
     <div style={{minHeight:'100vh',background:C.bg,padding:20}}>
@@ -489,10 +539,33 @@ function UsePartScreen({parts,users,images,navigate,toast}){
         <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 24px',letterSpacing:'-0.8px'}}>Use Part</h2>
         <div style={{...card,marginBottom:14}}>
           <p style={{color:'#94A3B8',fontSize:11,fontWeight:700,letterSpacing:'.5px',textTransform:'uppercase',margin:'0 0 10px'}}>Who are you?</p>
-          <select value={userId} onChange={e=>setUserId(e.target.value)} style={{...inp,cursor:'pointer'}}>
-            <option value="">— Select your name —</option>
-            {(users||[]).map(u=><option key={u.id} value={u.id}>{u.name}</option>)}
-          </select>
+          {!foundUser?(
+            <div style={{position:'relative'}}>
+              <input
+                value={badgeScan}
+                onChange={e=>{
+                  const v=e.target.value;
+                  setBadgeScan(v);
+                  const match=(users||[]).find(u=>u.badge&&u.badge.toLowerCase()===v.toLowerCase());
+                  if(match){setUserId(match.id);setFoundUser(match);}
+                  else{setUserId('');setFoundUser(null);}
+                }}
+                placeholder="Scan or type your badge number..."
+                style={{...inp,paddingRight:44}}
+                autoFocus
+              />
+              <span style={{position:'absolute',right:12,top:'50%',transform:'translateY(-50%)',fontSize:20}}>🪪</span>
+            </div>
+          ):(
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'#F0FDF4',border:'1.5px solid #86EFAC',borderRadius:10,padding:'12px 16px'}}>
+              <div>
+                <div style={{fontWeight:700,color:C.txt,fontSize:15}}>{foundUser.name}</div>
+                <div style={{color:C.sub,fontSize:12}}>Badge: {foundUser.badge} · {foundUser.email}</div>
+              </div>
+              <button onClick={()=>{setFoundUser(null);setBadgeScan('');setUserId('');}} style={{...btn,background:'none',color:C.sub,border:'none',fontSize:18,padding:'4px 8px'}}>✕</button>
+            </div>
+          )}
+          {badgeScan&&!foundUser&&<p style={{color:C.red,fontSize:12,marginTop:8}}>No user found with that badge number.</p>}
           {!(users?.length)&&<p style={{color:C.amber,fontSize:12,marginTop:8}}>No users added. Go to Settings first.</p>}
         </div>
         {items.map((it,idx)=>(
