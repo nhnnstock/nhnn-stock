@@ -61,7 +61,7 @@ const C = {
 };
 const card = {background:'#FFFFFF',border:'1.5px solid #E2E8F0',borderRadius:16,padding:20,boxShadow:'0 1px 4px rgba(15,23,42,.07)'};
 const btn  = {border:'none',borderRadius:10,cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:14,transition:'all .18s'};
-const inp  = {background:'#FFFFFF',color:'#0F172A',border:'1.5px solid #E2E8F0',borderRadius:10,padding:'11px 14px',fontSize:14,width:'100%',boxSizing:'border-box',fontFamily:'inherit'};
+const inp  = {background:'#FFFFFF',color:'#0F172A',border:'1.5px solid #E2E8F0',borderRadius:10,padding:'13px 16px',fontSize:15,width:'100%',boxSizing:'border-box',fontFamily:'inherit'};
 const bBtn = {...btn,background:'#FFFFFF',border:'1.5px solid #E2E8F0',color:'#64748B',padding:'9px 18px',marginBottom:20};
 
 function uid(){ return Date.now()+'-'+Math.random().toString(36).slice(2,8); }
@@ -283,13 +283,13 @@ function PartSearch({parts,images,label,onSelect}){
               <div key={p.id} onClick={()=>pick(p)}
                 onMouseEnter={e=>e.currentTarget.style.background='#F8FAFC'}
                 onMouseLeave={e=>e.currentTarget.style.background='transparent'}
-                style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',cursor:'pointer',borderBottom:'1px solid #F1F5F9',transition:'background .12s'}}>
+                style={{display:'flex',alignItems:'center',gap:14,padding:'12px 16px',cursor:'pointer',borderBottom:'1px solid #F1F5F9',transition:'background .12s'}}>
                 {(images&&images[p.partCode])
                   ?<img src={images[p.partCode]} style={{width:52,height:52,objectFit:'cover',borderRadius:10,flexShrink:0,border:'1.5px solid #E2E8F0'}}/>
-                  :<div style={{width:52,height:52,background:'#F1F5F9',borderRadius:10,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22}}>📦</div>}
+                  :<div style={{width:72,height:72,background:'#F1F5F9',borderRadius:12,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>📦</div>}
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{color:C.txt,fontSize:14,fontWeight:700,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.partName}</div>
-                  <div style={{color:C.sub,fontSize:12,marginTop:1}}>{p.partCode} · Bin: {p.binNumber} · {p.supplier}</div>
+                  <div style={{color:C.txt,fontSize:15,fontWeight:700,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.partName}</div>
+                  <div style={{color:C.sub,fontSize:13,marginTop:3}}>{p.partCode} · Bin: {p.binNumber} · {p.supplier}</div>
                   <span style={{display:'inline-block',marginTop:4,fontSize:11,fontWeight:600,padding:'2px 8px',borderRadius:4,
                     background:p.currentStock===0?'#FEF2F2':p.currentStock<=p.minimumStock?'#FFFBEB':'#F0FDF4',
                     color:p.currentStock===0?C.red:p.currentStock<=p.minimumStock?'#B45309':'#16A34A'}}>
@@ -307,10 +307,10 @@ function PartSearch({parts,images,label,onSelect}){
 /* ── Home ── */
 function HomeScreen({navigate,users}){
   const tiles=[
-    {key:'usePart',  icon:'📦',label:'Use Part',    desc:'Record parts taken',   accent:'#2563EB',bg:'#EEF2FF'},
-    {key:'addMenu',  icon:'➕',label:'Add Part',     desc:'Restock or add new',   accent:'#10B981',bg:'#ECFDF5'},
-    {key:'import',   icon:'📥',label:'Import Excel', desc:'Upload stock data',    accent:'#7C3AED',bg:'#F5F3FF'},
-    {key:'export',   icon:'📤',label:'Export Stock', desc:'Download or email',    accent:'#D97706',bg:'#FFFBEB'},
+    {key:'usePart',  icon:'📦',label:'Use Part',    desc:'Record parts taken from stock',   accent:'#2563EB',bg:'#EEF2FF'},
+    {key:'addMenu',  icon:'➕',label:'Add Part',     desc:'Restock or add a new part',       accent:'#10B981',bg:'#ECFDF5'},
+    {key:'import',   icon:'📥',label:'Import Excel', desc:'Bulk upload from spreadsheet',   accent:'#7C3AED',bg:'#F5F3FF'},
+    {key:'export',   icon:'📤',label:'Export Stock', desc:'Download or email stock list',   accent:'#D97706',bg:'#FFFBEB'},
   ];
   return(
     <div style={{minHeight:'100vh',background:'#F0F2FF',position:'relative',overflow:'hidden',display:'flex',flexDirection:'column'}}>
@@ -331,18 +331,18 @@ function HomeScreen({navigate,users}){
           </div>
           <button onClick={()=>navigate('settings')} style={{...btn,background:'rgba(255,255,255,.8)',border:'1.5px solid #E2E8F0',color:C.sub,padding:'10px 12px',fontSize:18}}>⚙️</button>
         </div>
-        <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',padding:'0 24px 32px'}}>
-          <h1 style={{fontSize:34,fontWeight:800,color:C.txt,margin:'0 0 6px',letterSpacing:'-1px',lineHeight:1.15}}>What would you<br/>like to do?</h1>
+        <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',padding:'0 40px 40px',maxWidth:900,margin:'0 auto',width:'100%'}}>
+          <h1 style={{fontSize:42,fontWeight:800,color:C.txt,margin:'0 0 8px',letterSpacing:'-1.5px',lineHeight:1.1}}>What would you<br/>like to do?</h1>
           <p style={{color:C.sub,fontSize:14,margin:'0 0 28px'}}>{new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
             {tiles.map(t=>(
               <button key={t.key} onClick={()=>navigate(t.key)}
-                style={{background:'rgba(255,255,255,.75)',backdropFilter:'blur(12px)',border:'1.5px solid rgba(255,255,255,.9)',borderRadius:20,padding:'22px 18px',cursor:'pointer',textAlign:'left',fontFamily:'inherit',boxShadow:'0 2px 12px rgba(15,23,42,.08)',transition:'all .2s'}}
+                style={{background:'rgba(255,255,255,.75)',backdropFilter:'blur(12px)',border:'1.5px solid rgba(255,255,255,.9)',borderRadius:24,padding:'32px 28px',cursor:'pointer',textAlign:'left',fontFamily:'inherit',boxShadow:'0 2px 12px rgba(15,23,42,.08)',transition:'all .2s'}}
                 onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 12px 28px '+t.accent+'30';e.currentTarget.style.borderColor=t.accent;}}
                 onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='0 2px 12px rgba(15,23,42,.08)';e.currentTarget.style.borderColor='rgba(255,255,255,.9)';}}>
-                <div style={{width:44,height:44,borderRadius:12,background:t.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,marginBottom:14,border:'1px solid '+t.accent+'20'}}>{t.icon}</div>
-                <div style={{color:C.txt,fontWeight:700,fontSize:15,marginBottom:3}}>{t.label}</div>
-                <div style={{color:C.sub,fontSize:12}}>{t.desc}</div>
+                <div style={{width:56,height:56,borderRadius:16,background:t.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,marginBottom:18,border:'1px solid '+t.accent+'20'}}>{t.icon}</div>
+                <div style={{color:C.txt,fontWeight:800,fontSize:18,marginBottom:6,letterSpacing:'-0.3px'}}>{t.label}</div>
+                <div style={{color:C.sub,fontSize:14}}>{t.desc}</div>
               </button>
             ))}
           </div>
@@ -370,24 +370,24 @@ function SettingsScreen({users,saveUsers:su,navigate,toast,resetPin}){
   const removeUser=async id=>{ await su((users||[]).filter(u=>u.id!==id)); toast('User removed','success'); };
   return(
     <div style={{minHeight:'100vh',background:C.bg,padding:20}}>
-      <div style={{maxWidth:480,margin:'0 auto'}}>
+      <div style={{maxWidth:640,margin:'0 auto'}}>
         <button onClick={()=>view==='menu'?navigate('home'):setView('menu')} style={bBtn}>← {view==='menu'?'Home':'Back'}</button>
         {view==='menu'&&<>
-          <h2 style={{fontWeight:800,fontSize:26,color:C.txt,margin:'0 0 20px',letterSpacing:'-0.5px'}}>Settings</h2>
+          <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 24px',letterSpacing:'-0.8px'}}>Settings</h2>
           {[{k:'users',icon:'👥',label:'Manage Users',desc:'Add or remove staff'},
             {k:'pin',  icon:'🔐',label:'Change PIN',  desc:'Update your 4-digit PIN'},
             {k:'info', icon:'ℹ️',label:'About',       desc:'Version and column guide'}].map(m=>(
             <button key={m.k} onClick={()=>m.k==='pin'?resetPin():setView(m.k)}
-              style={{...card,display:'flex',alignItems:'center',gap:16,width:'100%',cursor:'pointer',fontFamily:'inherit',textAlign:'left',marginBottom:12,transition:'all .18s'}}
+              style={{...card,display:'flex',alignItems:'center',gap:20,width:'100%',cursor:'pointer',fontFamily:'inherit',textAlign:'left',marginBottom:14,transition:'all .18s',padding:22}}
               onMouseEnter={e=>e.currentTarget.style.borderColor=C.blue}
               onMouseLeave={e=>e.currentTarget.style.borderColor='#E2E8F0'}>
-              <span style={{fontSize:28}}>{m.icon}</span>
-              <div><div style={{color:C.txt,fontWeight:700,fontSize:15}}>{m.label}</div><div style={{color:C.sub,fontSize:13,marginTop:2}}>{m.desc}</div></div>
+              <span style={{fontSize:36}}>{m.icon}</span>
+              <div><div style={{color:C.txt,fontWeight:800,fontSize:17,letterSpacing:'-0.3px'}}>{m.label}</div><div style={{color:C.sub,fontSize:14,marginTop:4}}>{m.desc}</div></div>
             </button>
           ))}
         </>}
         {view==='users'&&<>
-          <h2 style={{fontWeight:800,fontSize:26,color:C.txt,margin:'0 0 20px',letterSpacing:'-0.5px'}}>Manage Users</h2>
+          <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 24px',letterSpacing:'-0.8px'}}>Manage Users</h2>
           <div style={{...card,marginBottom:16}}>
             <p style={{color:'#94A3B8',fontSize:11,fontWeight:700,letterSpacing:'0.5px',textTransform:'uppercase',margin:'0 0 14px'}}>Add New User</p>
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
@@ -417,7 +417,7 @@ function SettingsScreen({users,saveUsers:su,navigate,toast,resetPin}){
           ))}
         </>}
         {view==='info'&&<>
-          <h2 style={{fontWeight:800,fontSize:26,color:C.txt,margin:'0 0 20px',letterSpacing:'-0.5px'}}>About</h2>
+          <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 24px',letterSpacing:'-0.8px'}}>About</h2>
           <div style={card}>
             <h3 style={{fontWeight:800,fontSize:18,color:C.txt,textAlign:'center',margin:'0 0 4px'}}>NHNN Stock Control</h3>
             <p style={{color:C.sub,textAlign:'center',fontSize:13,margin:'0 0 16px'}}>National Hospital for Neurology and Neurosurgery</p>
@@ -484,9 +484,9 @@ function UsePartScreen({parts,users,images,navigate,toast}){
   };
   return(
     <div style={{minHeight:'100vh',background:C.bg,padding:20}}>
-      <div style={{maxWidth:520,margin:'0 auto'}}>
+      <div style={{maxWidth:640,margin:'0 auto'}}>
         <button onClick={()=>navigate('home')} style={bBtn}>← Home</button>
-        <h2 style={{fontWeight:800,fontSize:26,color:C.txt,margin:'0 0 20px',letterSpacing:'-0.5px'}}>Use Part</h2>
+        <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 24px',letterSpacing:'-0.8px'}}>Use Part</h2>
         <div style={{...card,marginBottom:14}}>
           <p style={{color:'#94A3B8',fontSize:11,fontWeight:700,letterSpacing:'.5px',textTransform:'uppercase',margin:'0 0 10px'}}>Who are you?</p>
           <select value={userId} onChange={e=>setUserId(e.target.value)} style={{...inp,cursor:'pointer'}}>
@@ -523,7 +523,7 @@ function UsePartScreen({parts,users,images,navigate,toast}){
           </div>
         ))}
         <button onClick={()=>setItems(p=>[...p,{id:uid(),part:null,qty:1}])} style={{...btn,background:'#fff',border:'2px dashed #CBD5E1',color:'#94A3B8',padding:'12px 20px',width:'100%',marginBottom:14}}>+ Add Another Part</button>
-        <button onClick={submit} disabled={busy} style={{...btn,background:C.blue,color:'#fff',padding:'14px 20px',width:'100%',fontSize:15,opacity:busy?.7:1}}>{busy?'Processing...':'Confirm + Send Email'}</button>
+        <button onClick={submit} disabled={busy} style={{...btn,background:C.blue,color:'#fff',padding:'16px 20px',width:'100%',fontSize:16,opacity:busy?.7:1}}>{busy?'Processing...':'Confirm + Send Email'}</button>
       </div>
     </div>
   );
@@ -533,22 +533,22 @@ function UsePartScreen({parts,users,images,navigate,toast}){
 function AddMenu({navigate,parts,users,images,setImages,toast}){
   return(
     <div style={{minHeight:'100vh',background:C.bg,padding:20}}>
-      <div style={{maxWidth:480,margin:'0 auto'}}>
+      <div style={{maxWidth:640,margin:'0 auto'}}>
         <button onClick={()=>navigate('home')} style={bBtn}>← Home</button>
-        <h2 style={{fontWeight:800,fontSize:26,color:C.txt,margin:'0 0 8px',letterSpacing:'-0.5px'}}>Add Part</h2>
+        <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 10px',letterSpacing:'-0.8px'}}>Add Part</h2>
         <p style={{color:C.sub,fontSize:14,margin:'0 0 24px'}}>What would you like to do?</p>
         {[{key:'restock',icon:'🔄',label:'Restock Existing Part',desc:'Add quantity to parts already in the system'},
           {key:'newPart', icon:'🆕',label:'Add New Part',         desc:'Create a new entry with photo and all details'}].map(b=>(
           <button key={b.key} onClick={()=>navigate(b.key)}
-            style={{...card,display:'flex',alignItems:'center',gap:16,width:'100%',cursor:'pointer',fontFamily:'inherit',textAlign:'left',marginBottom:14,transition:'all .18s'}}
+            style={{...card,display:'flex',alignItems:'center',gap:20,width:'100%',cursor:'pointer',fontFamily:'inherit',textAlign:'left',marginBottom:16,transition:'all .18s',padding:24}}
             onMouseEnter={e=>e.currentTarget.style.borderColor=C.blue}
             onMouseLeave={e=>e.currentTarget.style.borderColor='#E2E8F0'}>
-            <span style={{fontSize:32}}>{b.icon}</span>
-            <div><div style={{color:C.txt,fontWeight:700,fontSize:15}}>{b.label}</div><div style={{color:C.sub,fontSize:13,marginTop:4}}>{b.desc}</div></div>
+            <span style={{fontSize:40}}>{b.icon}</span>
+            <div><div style={{color:C.txt,fontWeight:800,fontSize:18,letterSpacing:'-0.3px'}}>{b.label}</div><div style={{color:C.sub,fontSize:14,marginTop:6}}>{b.desc}</div></div>
           </button>
         ))}
         <button onClick={()=>navigate('correction')}
-          style={{...btn,background:'#FFFBEB',border:'1.5px solid #FCD34D',color:'#B45309',padding:'14px 20px',width:'100%',fontSize:14,borderRadius:12,fontFamily:'inherit'}}>
+          style={{...btn,background:'#FFFBEB',border:'1.5px solid #FCD34D',color:'#B45309',padding:'20px 24px',width:'100%',fontSize:16,borderRadius:16,fontFamily:'inherit',fontWeight:700}}>
           ⚠️ Stock Correction — adjust count or update details
         </button>
       </div>
@@ -574,9 +574,9 @@ function RestockScreen({parts,images,navigate,toast}){
   };
   return(
     <div style={{minHeight:'100vh',background:C.bg,padding:20}}>
-      <div style={{maxWidth:520,margin:'0 auto'}}>
+      <div style={{maxWidth:640,margin:'0 auto'}}>
         <button onClick={()=>navigate('addMenu')} style={bBtn}>← Back</button>
-        <h2 style={{fontWeight:800,fontSize:26,color:C.txt,margin:'0 0 20px',letterSpacing:'-0.5px'}}>Restock Parts</h2>
+        <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 24px',letterSpacing:'-0.8px'}}>Restock Parts</h2>
         {items.map((it,idx)=>(
           <div key={it.id} style={{...card,marginBottom:12}}>
             <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}>
@@ -597,7 +597,7 @@ function RestockScreen({parts,images,navigate,toast}){
           </div>
         ))}
         <button onClick={()=>setItems(p=>[...p,{id:uid(),part:null,qty:1}])} style={{...btn,background:'#fff',border:'2px dashed #CBD5E1',color:'#94A3B8',padding:'12px 20px',width:'100%',marginBottom:14}}>+ Add Another Part</button>
-        <button onClick={submit} disabled={busy} style={{...btn,background:C.green,color:'#fff',padding:'14px 20px',width:'100%',fontSize:15,opacity:busy?.7:1}}>{busy?'Saving...':'Confirm Restock'}</button>
+        <button onClick={submit} disabled={busy} style={{...btn,background:C.green,color:'#fff',padding:'16px 20px',width:'100%',fontSize:16,opacity:busy?.7:1}}>{busy?'Saving...':'Confirm Restock'}</button>
       </div>
     </div>
   );
@@ -641,9 +641,9 @@ function NewPartScreen({parts,users,images,setImages,navigate,toast}){
   ];
   return(
     <div style={{minHeight:'100vh',background:C.bg,padding:20}}>
-      <div style={{maxWidth:520,margin:'0 auto'}}>
+      <div style={{maxWidth:640,margin:'0 auto'}}>
         <button onClick={()=>navigate('addMenu')} style={bBtn}>← Back</button>
-        <h2 style={{fontWeight:800,fontSize:26,color:C.txt,margin:'0 0 20px',letterSpacing:'-0.5px'}}>Add New Part</h2>
+        <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 24px',letterSpacing:'-0.8px'}}>Add New Part</h2>
         <div style={card}>
           {fields.map(f=>(
             <div key={f.k} style={{marginBottom:14}}>
@@ -661,7 +661,7 @@ function NewPartScreen({parts,users,images,setImages,navigate,toast}){
               {img&&<><img src={img} style={{width:52,height:52,objectFit:'cover',borderRadius:8,border:'1.5px solid #E2E8F0'}}/><button onClick={()=>setImg(null)} style={{...btn,background:'none',color:C.sub,border:'none',padding:'4px 8px',fontSize:18}}>✕</button></>}
             </div>
           </div>
-          <button onClick={submit} disabled={busy} style={{...btn,background:C.blue,color:'#fff',padding:'14px 20px',width:'100%',fontSize:15,opacity:busy?.7:1}}>{busy?'Uploading...':'Add Part (Managers notified)'}</button>
+          <button onClick={submit} disabled={busy} style={{...btn,background:C.blue,color:'#fff',padding:'16px 20px',width:'100%',fontSize:16,opacity:busy?.7:1}}>{busy?'Uploading...':'Add Part (Managers notified)'}</button>
         </div>
       </div>
     </div>
@@ -697,9 +697,9 @@ function CorrectionScreen({parts,users,images,setImages,navigate,toast}){
   };
   return(
     <div style={{minHeight:'100vh',background:C.bg,padding:20}}>
-      <div style={{maxWidth:520,margin:'0 auto'}}>
+      <div style={{maxWidth:640,margin:'0 auto'}}>
         <button onClick={()=>navigate('addMenu')} style={bBtn}>← Back</button>
-        <h2 style={{fontWeight:800,fontSize:26,color:C.txt,margin:'0 0 6px',letterSpacing:'-0.5px'}}>Stock Correction</h2>
+        <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 8px',letterSpacing:'-0.8px'}}>Stock Correction</h2>
         <div style={{background:'#FFFBEB',border:'1.5px solid #FCD34D',borderRadius:10,padding:'10px 14px',marginBottom:20,fontSize:13,color:'#92400E'}}>⚠️ Managers will be notified of all corrections.</div>
         <div style={{...card,marginBottom:14}}>
           <p style={{color:'#94A3B8',fontSize:11,fontWeight:700,letterSpacing:'.5px',textTransform:'uppercase',margin:'0 0 10px'}}>Find Part</p>
@@ -732,7 +732,15 @@ function CorrectionScreen({parts,users,images,setImages,navigate,toast}){
                 {img&&<button onClick={()=>setImg(null)} style={{...btn,background:'none',color:C.sub,border:'none',padding:'4px 8px',fontSize:18}}>✕</button>}
               </div>
             </div>
-            <button onClick={submit} disabled={busy} style={{...btn,background:C.amber,color:'#fff',padding:'14px 20px',width:'100%',fontSize:15,opacity:busy?.7:1}}>{busy?'Saving...':'Apply Correction — Notify Managers'}</button>
+            <button onClick={submit} disabled={busy} style={{...btn,background:C.amber,color:'#fff',padding:'14px 20px',width:'100%',fontSize:15,opacity:busy?.7:1,marginBottom:10}}>{busy?'Saving...':'Apply Correction — Notify Managers'}</button>
+            <button onClick={async()=>{{
+              if(!window.confirm('Delete "'+sel.partName+'" permanently? This cannot be undone.'))return;
+              const np=parts.filter(p=>p.id!==sel.id);
+              await saveParts(np);
+              try{{await db.collection('nhnn').doc('photo_'+sel.partCode).delete();}}catch{{}}
+              toast(sel.partName+' deleted','success');
+              navigate('addMenu');
+            }}} style={{{{...btn,background:'#FEF2F2',color:C.red,border:'1.5px solid #FEE2E2',padding:'12px 20px',width:'100%',fontSize:14}}}}>🗑 Delete This Part Permanently</button>
           </div>
         )}
       </div>
@@ -785,9 +793,9 @@ function ImportScreen({parts,images,navigate,toast}){
   };
   return(
     <div style={{minHeight:'100vh',background:C.bg,padding:20}}>
-      <div style={{maxWidth:560,margin:'0 auto'}}>
+      <div style={{maxWidth:640,margin:'0 auto'}}>
         <button onClick={()=>navigate('home')} style={bBtn}>← Home</button>
-        <h2 style={{fontWeight:800,fontSize:26,color:C.txt,margin:'0 0 8px',letterSpacing:'-0.5px'}}>Import Excel</h2>
+        <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 10px',letterSpacing:'-0.8px'}}>Import Excel</h2>
         <p style={{color:C.sub,fontSize:14,margin:'0 0 16px'}}>Matching Part Codes update. New Part Codes get added.</p>
         <div style={{...card,background:'#EEF2FF',border:'1.5px solid #C7D2FE',marginBottom:16}}>
           <p style={{color:'#4338CA',fontSize:13,fontWeight:600,margin:'0 0 4px'}}>Required columns (all must be present):</p>
@@ -842,9 +850,9 @@ function ExportScreen({parts,images,navigate,toast}){
   };
   return(
     <div style={{minHeight:'100vh',background:C.bg,padding:20}}>
-      <div style={{maxWidth:520,margin:'0 auto'}}>
+      <div style={{maxWidth:640,margin:'0 auto'}}>
         <button onClick={()=>navigate('home')} style={bBtn}>← Home</button>
-        <h2 style={{fontWeight:800,fontSize:26,color:C.txt,margin:'0 0 8px',letterSpacing:'-0.5px'}}>Export Stock</h2>
+        <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 10px',letterSpacing:'-0.8px'}}>Export Stock</h2>
         <p style={{color:C.sub,fontSize:14,margin:'0 0 20px'}}>Download or email your stock list.</p>
         <div style={{...card,marginBottom:14}}>
           <p style={{color:'#94A3B8',fontSize:11,fontWeight:700,letterSpacing:'.5px',textTransform:'uppercase',margin:'0 0 12px'}}>Download File</p>
