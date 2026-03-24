@@ -285,7 +285,7 @@ function PartSearch({parts,images,label,onSelect}){
                 onMouseLeave={e=>e.currentTarget.style.background='transparent'}
                 style={{display:'flex',alignItems:'center',gap:14,padding:'12px 16px',cursor:'pointer',borderBottom:'1px solid #F1F5F9',transition:'background .12s'}}>
                 {(images&&images[p.partCode])
-                  ?<img src={images[p.partCode]} style={{width:52,height:52,objectFit:'cover',borderRadius:10,flexShrink:0,border:'1.5px solid #E2E8F0'}}/>
+                  ?<img src={images[p.partCode]} style={{width:72,height:72,objectFit:'cover',borderRadius:12,flexShrink:0,border:'1.5px solid #E2E8F0'}}/>
                   :<div style={{width:72,height:72,background:'#F1F5F9',borderRadius:12,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>📦</div>}
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{color:C.txt,fontSize:15,fontWeight:700,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.partName}</div>
@@ -658,7 +658,7 @@ function NewPartScreen({parts,users,images,setImages,navigate,toast}){
             <input type="file" accept="image/*" capture="environment" ref={fref} onChange={handleImg} style={{display:'none'}}/>
             <div style={{display:'flex',gap:10,alignItems:'center'}}>
               <button onClick={()=>fref.current?.click()} style={{...btn,background:'#F8FAFC',border:'1.5px solid #E2E8F0',color:C.txt,padding:'10px 16px'}}>📷 Upload Photo</button>
-              {img&&<><img src={img} style={{width:52,height:52,objectFit:'cover',borderRadius:8,border:'1.5px solid #E2E8F0'}}/><button onClick={()=>setImg(null)} style={{...btn,background:'none',color:C.sub,border:'none',padding:'4px 8px',fontSize:18}}>✕</button></>}
+              {img&&<><img src={img} style={{width:72,height:72,objectFit:'cover',borderRadius:12,border:'1.5px solid #E2E8F0'}}/><button onClick={()=>setImg(null)} style={{...btn,background:'none',color:C.sub,border:'none',padding:'4px 8px',fontSize:18}}>✕</button></>}
             </div>
           </div>
           <button onClick={submit} disabled={busy} style={{...btn,background:C.blue,color:'#fff',padding:'16px 20px',width:'100%',fontSize:16,opacity:busy?.7:1}}>{busy?'Uploading...':'Add Part (Managers notified)'}</button>
@@ -728,19 +728,19 @@ function CorrectionScreen({parts,users,images,setImages,navigate,toast}){
               <input type="file" accept="image/*" capture="environment" ref={fref} onChange={handleImg} style={{display:'none'}}/>
               <div style={{display:'flex',gap:10,alignItems:'center'}}>
                 <button onClick={()=>fref.current?.click()} style={{...btn,background:'#F8FAFC',border:'1.5px solid #E2E8F0',color:C.txt,padding:'10px 16px'}}>📷 {(images&&images[sel.partCode])?'Replace Photo':'Add Photo'}</button>
-                {(img||(images&&images[sel.partCode]))&&<img src={img||(images&&images[sel.partCode])} style={{width:52,height:52,objectFit:'cover',borderRadius:8,border:'1.5px solid #E2E8F0'}}/>}
+                {(img||(images&&images[sel.partCode]))&&<img src={img||(images&&images[sel.partCode])} style={{width:72,height:72,objectFit:'cover',borderRadius:12,border:'1.5px solid #E2E8F0'}}/>}
                 {img&&<button onClick={()=>setImg(null)} style={{...btn,background:'none',color:C.sub,border:'none',padding:'4px 8px',fontSize:18}}>✕</button>}
               </div>
             </div>
             <button onClick={submit} disabled={busy} style={{...btn,background:C.amber,color:'#fff',padding:'14px 20px',width:'100%',fontSize:15,opacity:busy?.7:1,marginBottom:10}}>{busy?'Saving...':'Apply Correction — Notify Managers'}</button>
-            <button onClick={async()=>{{
+            <button onClick={async()=>{
               if(!window.confirm('Delete "'+sel.partName+'" permanently? This cannot be undone.'))return;
               const np=parts.filter(p=>p.id!==sel.id);
               await saveParts(np);
-              try{{await db.collection('nhnn').doc('photo_'+sel.partCode).delete();}}catch{{}}
+              try{await db.collection('nhnn').doc('photo_'+sel.partCode).delete();}catch(e){}
               toast(sel.partName+' deleted','success');
               navigate('addMenu');
-            }}} style={{{{...btn,background:'#FEF2F2',color:C.red,border:'1.5px solid #FEE2E2',padding:'12px 20px',width:'100%',fontSize:14}}}}>🗑 Delete This Part Permanently</button>
+            }} style={{...btn,background:'#FEF2F2',color:C.red,border:'1.5px solid #FEE2E2',padding:'12px 20px',width:'100%',fontSize:14}}>🗑 Delete This Part Permanently</button>
           </div>
         )}
       </div>
