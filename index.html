@@ -509,6 +509,7 @@ function SettingsScreen({users,saveUsers:su,navigate,toast,resetPin}){
 function UsePartScreen({parts,users,images,navigate,toast}){
   const [userId,setUserId]=useState('');
   const [foundUser,setFoundUser]=useState(null);
+  const [badgeInput,setBadgeInput]=useState('');
   const [items,setItems]=useState([]);
   const [busy,setBusy]=useState(false);
   const bufRef=useRef('');
@@ -517,9 +518,9 @@ function UsePartScreen({parts,users,images,navigate,toast}){
   // Global barcode scanner listener — detects USB/Bluetooth scanners
   useEffect(()=>{
     const handleKey=e=>{
-      // Ignore if user is typing in an input (except the badge field)
+      // Ignore if user is typing in any input or textarea
       const tag=document.activeElement?.tagName;
-      if(tag==='TEXTAREA')return;
+      if(tag==='TEXTAREA'||tag==='INPUT'||tag==='SELECT')return;
 
       if(e.key==='Enter'){
         const code=bufRef.current.trim();
@@ -602,7 +603,7 @@ function UsePartScreen({parts,users,images,navigate,toast}){
     }
     setBusy(false);
     toast('Parts recorded + emails sent!','success');
-    setItems([]);setUserId('');setFoundUser(null);
+    setItems([]);setUserId('');setFoundUser(null);setBadgeInput('');
   };
 
   return(
@@ -617,14 +618,22 @@ function UsePartScreen({parts,users,images,navigate,toast}){
           {!foundUser?(
             <div style={{position:'relative'}}>
               <input
-                value={''}
+                value={badgeInput}
                 onChange={e=>{
                   const v=e.target.value;
+                  setBadgeInput(v);
                   const user=(users||[]).find(u=>u.badge&&u.badge===v);
-                  if(user){setUserId(user.id);setFoundUser(user);}
+                  if(user){setUserId(user.id);setFoundUser(user);setBadgeInput('');}
+                }}
+                onKeyDown={e=>{
+                  if(e.key==='Enter'){
+                    const user=(users||[]).find(u=>u.badge&&u.badge===badgeInput);
+                    if(user){setUserId(user.id);setFoundUser(user);setBadgeInput('');}
+                  }
                 }}
                 placeholder="Scan badge or type badge number..."
                 style={{...inp,paddingRight:44}}
+                autoComplete="off"
               />
               <span style={{position:'absolute',right:12,top:'50%',transform:'translateY(-50%)',fontSize:20}}>🪪</span>
             </div>
@@ -725,7 +734,7 @@ function RestockScreen({parts,images,navigate,toast}){
   useEffect(()=>{
     const handleKey=e=>{
       const tag=document.activeElement?.tagName;
-      if(tag==='TEXTAREA')return;
+      if(tag==='TEXTAREA'||tag==='INPUT'||tag==='SELECT')return;
       if(e.key==='Enter'){
         const code=bufRef.current.trim();
         bufRef.current='';
