@@ -27,7 +27,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#2563EB!import
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:4px}
 </style>
 </head>
-<body>
+<body tabindex="0">
 <div id="root"></div>
 <script>
 if('serviceWorker' in navigator)
@@ -517,11 +517,11 @@ function UsePartScreen({parts,users,images,navigate,toast}){
 
   // Global barcode scanner listener — detects USB/Bluetooth scanners
   useEffect(()=>{
+    // Ensure page has focus to capture scanner input
+    document.body.focus();
     const handleKey=e=>{
-      // Ignore if user is typing in any input or textarea
       const tag=document.activeElement?.tagName;
       if(tag==='TEXTAREA'||tag==='INPUT'||tag==='SELECT')return;
-
       if(e.key==='Enter'){
         const code=bufRef.current.trim();
         bufRef.current='';
@@ -529,9 +529,8 @@ function UsePartScreen({parts,users,images,navigate,toast}){
         handleScan(code);
       }else if(e.key.length===1){
         bufRef.current+=e.key;
-        // Clear buffer if no Enter within 100ms (human typing, not scanner)
         clearTimeout(timerRef.current);
-        timerRef.current=setTimeout(()=>{bufRef.current='';},100);
+        timerRef.current=setTimeout(()=>{bufRef.current='';},500);
       }
     };
     window.addEventListener('keydown',handleKey);
@@ -607,7 +606,7 @@ function UsePartScreen({parts,users,images,navigate,toast}){
   };
 
   return(
-    <div style={{minHeight:'100vh',background:C.bg,padding:20}}>
+    <div style={{minHeight:'100vh',background:C.bg,padding:20}} onClick={e=>{if(e.target===e.currentTarget||e.target.tagName==='DIV')document.body.focus();}}>
       <div style={{maxWidth:640,margin:'0 auto'}}>
         <button onClick={()=>navigate('home')} style={bBtn}>← Home</button>
         <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 8px',letterSpacing:'-0.8px'}}>Use Part</h2>
@@ -732,6 +731,7 @@ function RestockScreen({parts,images,navigate,toast}){
   const timerRef=useRef(null);
 
   useEffect(()=>{
+    document.body.focus();
     const handleKey=e=>{
       const tag=document.activeElement?.tagName;
       if(tag==='TEXTAREA'||tag==='INPUT'||tag==='SELECT')return;
@@ -754,7 +754,7 @@ function RestockScreen({parts,images,navigate,toast}){
       }else if(e.key.length===1){
         bufRef.current+=e.key;
         clearTimeout(timerRef.current);
-        timerRef.current=setTimeout(()=>{bufRef.current='';},100);
+        timerRef.current=setTimeout(()=>{bufRef.current='';},500);
       }
     };
     window.addEventListener('keydown',handleKey);
