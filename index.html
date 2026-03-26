@@ -454,6 +454,7 @@ function UsePartScreen({parts,users,images,navigate,toast}){
   const [badgeInput,setBadgeInput]=useState('');
   const [items,setItems]=useState([]);
   const [busy,setBusy]=useState(false);
+  const [scanVal,setScanVal]=useState('');
   const scanRef=useRef(null);
 
   // Keep scanner input focused
@@ -521,7 +522,7 @@ function UsePartScreen({parts,users,images,navigate,toast}){
     }
     setBusy(false);
     toast('Parts recorded + emails sent!','success');
-    setItems([]);setUserId('');setFoundUser(null);setBadgeInput('');
+    setItems([]);setUserId('');setFoundUser(null);setBadgeInput('');setScanVal('');
   };
 
   return(
@@ -534,15 +535,15 @@ function UsePartScreen({parts,users,images,navigate,toast}){
         {/* Scanner capture bar */}
         <div style={{position:'sticky',top:0,zIndex:100,background:'rgba(240,242,255,0.97)',backdropFilter:'blur(8px)',paddingBottom:12,marginBottom:4}}>
           <input ref={scanRef}
+            value={scanVal} onChange={e=>setScanVal(e.target.value)}
             onKeyDown={e=>{
               if(e.key==='Enter'){
-                const v=e.target.value.trim();
-                e.target.value='';
+                const v=scanVal.trim();
+                setScanVal('');
                 handleScan(v);
               }
             }}
             placeholder="📷 Ready to scan — point scanner here..."
-            defaultValue=""
             style={{...inp,border:'1.5px solid '+C.blue,borderRadius:12,fontSize:14,color:C.sub}}
             autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
           />
@@ -658,6 +659,7 @@ function AddMenu({navigate}){
 function RestockScreen({parts,images,navigate,toast}){
   const [items,setItems]=useState([]);
   const [busy,setBusy]=useState(false);
+  const [restockVal,setRestockVal]=useState('');
   const scanRef=useRef(null);
 
   useEffect(()=>{
@@ -691,7 +693,7 @@ function RestockScreen({parts,images,navigate,toast}){
       const it=valid.find(i=>i.part.id===p.id);
       return it?{...p,currentStock:p.currentStock+it.qty,updatedAt:new Date().toISOString()}:p;
     });
-    await saveParts(np);setBusy(false);
+    await saveParts(np);setBusy(false);setRestockVal('');
     toast(valid.length+' part(s) restocked!','success');navigate('addMenu');
   };
 
@@ -704,15 +706,15 @@ function RestockScreen({parts,images,navigate,toast}){
 
         <div style={{position:'sticky',top:0,zIndex:100,background:'rgba(240,242,255,0.97)',backdropFilter:'blur(8px)',paddingBottom:12,marginBottom:4}}>
           <input ref={scanRef}
+            value={restockVal} onChange={e=>setRestockVal(e.target.value)}
             onKeyDown={e=>{
               if(e.key==='Enter'){
-                const v=e.target.value.trim();
-                e.target.value='';
+                const v=restockVal.trim();
+                setRestockVal('');
                 handleScan(v);
               }
             }}
             placeholder="📷 Ready to scan — point scanner here..."
-            defaultValue=""
             style={{...inp,border:'1.5px solid '+C.green,borderRadius:12,fontSize:14,color:C.sub}}
             autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
           />
