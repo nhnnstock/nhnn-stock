@@ -615,9 +615,35 @@ function UsePartScreen({parts,users,images,navigate,toast}){
       <div style={{position:'sticky',top:0,zIndex:100,background:'rgba(240,242,255,0.95)',backdropFilter:'blur(8px)',padding:'8px 0 12px',marginBottom:4}}>
         <div style={{position:'relative'}}>
           <input ref={scanInputRef} value={scanBuf}
-            onChange={e=>setScanBuf(e.target.value)}
+            onChange={e=>{
+              const v=e.target.value;
+              setScanBuf(v);
+              // Auto-submit if value ends with newline (some scanners send 
+ instead of Enter key)
+              if(v.includes('\n')||v.includes('\r')){
+                const code=v.replace(/[\n\r]/g,'').trim();
+                setScanBuf('');
+                if(code)handleScan(code);
+                return;
+              }
+              // Auto-submit after 300ms of no new input (scanner finished)
+              clearTimeout(scanInputRef._timer);
+              scanInputRef._timer=setTimeout(()=>{
+                const code=v.trim();
+                if(code.length>=3){setScanBuf('');handleScan(code);}
+              },300);
+            }}
             onKeyDown={e=>{
-              if(e.key==='Enter'){
+              if(e.key==='Enter'||e.keyCode===13){
+                clearTimeout(scanInputRef._timer);
+                const code=scanBuf.trim();
+                setScanBuf('');
+                if(code)handleScan(code);
+              }
+            }}
+            onKeyUp={e=>{
+              if(e.key==='Enter'||e.keyCode===13){
+                clearTimeout(scanInputRef._timer);
                 const code=scanBuf.trim();
                 setScanBuf('');
                 if(code)handleScan(code);
@@ -781,24 +807,35 @@ function RestockScreen({parts,images,navigate,toast}){
     <div style={{minHeight:'100vh',background:C.bg,padding:20}}>
       <div style={{position:'sticky',top:0,zIndex:100,background:'rgba(240,242,255,0.95)',backdropFilter:'blur(8px)',padding:'8px 0 12px',marginBottom:4}}>
         <input ref={restockScanRef} value={restockBuf}
-          onChange={e=>setRestockBuf(e.target.value)}
+          onChange={e=>{
+            const v=e.target.value;
+            setRestockBuf(v);
+            if(v.includes('\n')||v.includes('\r')){
+              const code=v.replace(/[\n\r]/g,'').trim();
+              setRestockBuf('');
+              handleRestockScan(code);
+              return;
+            }
+            clearTimeout(restockScanRef._timer);
+            restockScanRef._timer=setTimeout(()=>{
+              const code=v.trim();
+              if(code.length>=3){setRestockBuf('');handleRestockScan(code);}
+            },300);
+          }}
           onKeyDown={e=>{
-            if(e.key==='Enter'){
+            if(e.key==='Enter'||e.keyCode===13){
+              clearTimeout(restockScanRef._timer);
               const code=restockBuf.trim();
               setRestockBuf('');
-              if(!code)return;
-              const part=parts.find(p=>p.partCode===code||p.partNumber===code);
-              if(part){
-                setItems(prev=>{
-                  const existing=prev.findIndex(i=>i.part&&i.part.id===part.id);
-                  if(existing!==-1){
-                    const updated=[...prev];
-                    updated[existing]={...updated[existing],qty:updated[existing].qty+1};
-                    return updated;
-                  }
-                  return [...prev,{id:uid(),part,qty:1}];
-                });
-              }
+              if(code)handleRestockScan(code);
+            }
+          }}
+          onKeyUp={e=>{
+            if(e.key==='Enter'||e.keyCode===13){
+              clearTimeout(restockScanRef._timer);
+              const code=restockBuf.trim();
+              setRestockBuf('');
+              if(code)handleRestockScan(code);
             }
           }}
           onBlur={()=>setTimeout(()=>restockScanRef.current?.focus(),50)}
