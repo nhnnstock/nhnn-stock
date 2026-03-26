@@ -104,7 +104,7 @@ async function sendEmail(to,subject,body,attachments){
   try{
     const payload={to:toArr,subject,text:body};
     if(attachments&&attachments.length)payload.attachments=attachments;
-    const res=await fetch('/.netlify/functions/send-email',{
+    const res=await fetch('https://send-email.nhnnstock-noreply.workers.dev',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload)
     });
