@@ -1162,23 +1162,17 @@ function App(){
 
   const p={parts,users,images,setImages,navigate:nav,toast};
 
-  function Screen(){
-    switch(screen){
-      case 'settings':   return <SettingsScreen {...p} saveUsers={su} resetPin={resetPin}/>;
-      case 'usePart':    return <UsePartScreen {...p}/>;
-      case 'addMenu':    return <AddMenu {...p}/>;
-      case 'restock':    return <RestockScreen {...p}/>;
-      case 'newPart':    return <NewPartScreen {...p}/>;
-      case 'correction': return <CorrectionScreen {...p}/>;
-      case 'import':     return <ImportScreen {...p}/>;
-      case 'export':     return <ExportScreen {...p}/>;
-      default:           return <HomeScreen {...p}/>;
-    }
-  }
-
   return(
     <div style={{fontFamily:"'Inter',system-ui,sans-serif"}}>
-      <Screen/>
+      {screen==='settings'   && <SettingsScreen {...p} saveUsers={su} resetPin={resetPin}/>}
+      {screen==='usePart'    && <UsePartScreen {...p}/>}
+      {screen==='addMenu'    && <AddMenu {...p}/>}
+      {screen==='restock'    && <RestockScreen {...p}/>}
+      {screen==='newPart'    && <NewPartScreen {...p}/>}
+      {screen==='correction' && <CorrectionScreen {...p}/>}
+      {screen==='import'     && <ImportScreen {...p}/>}
+      {screen==='export'     && <ExportScreen {...p}/>}
+      {!['settings','usePart','addMenu','restock','newPart','correction','import','export'].includes(screen) && <HomeScreen {...p}/>}
       <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',display:'flex',flexDirection:'column',gap:8,zIndex:9999,alignItems:'center',pointerEvents:'none'}}>
         {toasts.map(t=><Toast key={t.id} msg={t.msg} type={t.type} duration={t.dur}/>)}
       </div>
