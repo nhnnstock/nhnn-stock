@@ -221,7 +221,7 @@ function PartSearch({parts,images,label,onSelect}){
   }).slice(0,20);
   const pick=p=>{onSelect(p);setQ('');setOpen(false);};
   useEffect(()=>{
-    if(!q)return;
+    if(!q||q.length<3)return;
     const exact=parts.find(p=>p.partCode===q||p.partNumber===q);
     if(exact)pick(exact);
   },[q]);
@@ -352,8 +352,9 @@ function SettingsScreen({users,saveUsers:su,navigate,toast,resetPin}){
           {[{k:'users',icon:'👥',label:'Manage Users',desc:'Add or remove staff (password protected)'},
             {k:'pin',icon:'🔐',label:'Change PIN',desc:'Update your 4-digit PIN'},
             {k:'faq',icon:'❓',label:'FAQ',desc:'How to use the app'},
-            {k:'info',icon:'ℹ️',label:'About',desc:'Version and column guide'}].map(m=>(
-            <button key={m.k} onClick={()=>m.k==='pin'?resetPin():m.k==='users'&&!pwUnlocked?setView('pwcheck'):setView(m.k)}
+            {k:'info',icon:'ℹ️',label:'About',desc:'Version and column guide'},
+            {k:'danger',icon:'⚠️',label:'Danger Zone',desc:'Delete all parts from database'}].map(m=>(
+            <button key={m.k} onClick={()=>m.k==='pin'?resetPin():m.k==='users'&&!pwUnlocked?setView('pwcheck'):m.k==='danger'&&!pwUnlocked?setView('pwcheck'):setView(m.k)}
               style={{...card,display:'flex',alignItems:'center',gap:20,width:'100%',cursor:'pointer',fontFamily:'inherit',textAlign:'left',marginBottom:14,transition:'all .18s',padding:22}}
               onMouseEnter={e=>e.currentTarget.style.borderColor=C.blue}
               onMouseLeave={e=>e.currentTarget.style.borderColor='#E2E8F0'}>
@@ -427,6 +428,20 @@ function SettingsScreen({users,saveUsers:su,navigate,toast,resetPin}){
                 <div style={{color:C.sub,fontSize:13,lineHeight:1.6}}>{item.a}</div>
               </div>
             ))}
+          </div>
+        </>}
+        {view==='danger'&&<>
+          <h2 style={{fontWeight:800,fontSize:30,color:C.txt,margin:'0 0 20px',letterSpacing:'-0.8px',color:C.red}}>Danger Zone</h2>
+          <div style={{...card,border:'1.5px solid #FEE2E2',background:'#FEF2F2'}}>
+            <p style={{fontWeight:700,color:C.red,marginBottom:8}}>Delete All Parts</p>
+            <p style={{color:C.sub,fontSize:13,marginBottom:16}}>This permanently deletes every part from the database. Cannot be undone. Use before importing a fresh spreadsheet.</p>
+            <button onClick={async()=>{
+              if(!window.confirm('Delete ALL parts permanently? This cannot be undone.'))return;
+              if(!window.confirm('Are you absolutely sure? All stock data will be lost.'))return;
+              await db.collection('nhnn').doc('parts').set({v:[]});
+              toast('All parts deleted','success');
+              setView('menu');
+            }} style={{...btn,background:C.red,color:'#fff',padding:'12px 20px',width:'100%',fontSize:15}}>🗑 Delete All Parts</button>
           </div>
         </>}
         {view==='info'&&<>
@@ -564,6 +579,7 @@ function UsePartScreen({parts,users,images,navigate,toast}){
                 setScanVal('');
                 if(v)handleScan(v);
                 e.preventDefault();
+                e.stopPropagation();
               }
             }}
             placeholder="📷 Ready to scan — point scanner here..."
