@@ -873,7 +873,7 @@ function RestockScreen({parts,images,navigate,toast}){
       const it=valid.find(i=>i.part.id===p.id);
       return it?{...p,currentStock:p.currentStock+it.qty,updatedAt:new Date().toISOString()}:p;
     });
-    await saveParts(np);setBusy(false);setRestockVal('');
+    await saveParts(np);setBusy(false);
     toast(valid.length+' part(s) restocked!','success');navigate('addMenu');
   };
 
@@ -886,12 +886,13 @@ function RestockScreen({parts,images,navigate,toast}){
 
         <div style={{position:'sticky',top:0,zIndex:100,background:'rgba(240,242,255,0.97)',backdropFilter:'blur(8px)',paddingBottom:12,marginBottom:4}}>
           <input ref={scanRef}
-            value={restockVal} onChange={e=>setRestockVal(e.target.value)}
             onKeyDown={e=>{
               if(e.key==='Enter'){
-                const v=restockVal.trim();
-                setRestockVal('');
-                handleScan(v);
+                const v=e.target.value.trim();
+                e.target.value='';
+                e.preventDefault();
+                e.stopPropagation();
+                if(v)handleScan(v);
               }
             }}
             placeholder="📷 Ready to scan — point scanner here..."
