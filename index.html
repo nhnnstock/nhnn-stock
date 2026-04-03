@@ -270,7 +270,7 @@ function PartSearch({parts,images,label,onSelect}){
 }
 
 /* ── Home ── */
-function HomeScreen({navigate,users}){
+function HomeScreen({navigate,users,weather}){
   const tiles=[
     {key:'usePart',icon:'📦',label:'Use Part',desc:'Record parts taken from stock',accent:'#2563EB',bg:'#EEF2FF'},
     {key:'addMenu',icon:'➕',label:'Add Part',desc:'Restock or add a new part',accent:'#10B981',bg:'#ECFDF5'},
@@ -287,46 +287,20 @@ function HomeScreen({navigate,users}){
     return()=>clearInterval(t);
   },[]);
 
-  // Weather — Open-Meteo, London coords, no API key needed
-  useEffect(()=>{
-    const fetchWeather=async()=>{
-      try{
-        const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=51.5085&longitude=-0.1257&current=temperature_2m,weathercode,windspeed_10m&timezone=Europe/London');
-        const d=await r.json();
-        const code=d.current.weathercode;
-        const temp=Math.round(d.current.temperature_2m);
-        const wind=Math.round(d.current.windspeed_10m);
-        // Map WMO weather codes to condition
-        let condition,emoji;
-        if(code===0){condition='Clear Sky';emoji='sunny';}
-        else if(code<=2){condition='Partly Cloudy';emoji='partly';}
-        else if(code<=3){condition='Overcast';emoji='cloudy';}
-        else if(code<=49){condition='Foggy';emoji='foggy';}
-        else if(code<=59){condition='Drizzle';emoji='drizzle';}
-        else if(code<=69){condition='Rainy';emoji='rain';}
-        else if(code<=79){condition='Snowy';emoji='snow';}
-        else if(code<=82){condition='Rain Showers';emoji='rain';}
-        else if(code<=86){condition='Snow Showers';emoji='snow';}
-        else{condition='Thunderstorm';emoji='storm';}
-        setWeather({temp,condition,emoji,wind});
-      }catch(e){console.error('weather',e);}
-    };
-    fetchWeather();
-    const t=setInterval(fetchWeather,30*60*1000);
-    return()=>clearInterval(t);
-  },[]);
-
+  
   const hour=time.getHours();
   const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
 
   const WeatherIcon=({type,size=52})=>{
     const s=size;
     if(type==='sunny') return(
-      <div style={{position:'relative',width:s,height:s,display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <div style={{width:s*0.45,height:s*0.45,borderRadius:'50%',background:'linear-gradient(135deg,#FDE68A,#F59E0B)',boxShadow:'0 0 '+(s*0.3)+'px #FCD34D',animation:'spin 8s linear infinite'}}/>
-        {[0,45,90,135,180,225,270,315].map(a=>(
-          <div key={a} style={{position:'absolute',width:s*0.08,height:s*0.18,background:'#F59E0B',borderRadius:4,top:'50%',left:'50%',transformOrigin:'50% '+(s*0.52)+'px',transform:'translateX(-50%) rotate('+a+'deg) translateY(-'+(s*0.52)+'px)',animation:'pulse 2s ease-in-out infinite',animationDelay:(a/45*0.25)+'s'}}/>
-        ))}
+      <div style={{position:'relative',width:s,height:s,display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
+        <div style={{position:'relative',width:s*0.9,height:s*0.9,display:'flex',alignItems:'center',justifyContent:'center',animation:'spin 10s linear infinite'}}>
+          <div style={{width:s*0.42,height:s*0.42,borderRadius:'50%',background:'linear-gradient(135deg,#FDE68A,#F59E0B)',boxShadow:'0 0 '+(s*0.2)+'px #FCD34D',position:'absolute'}}/>
+          {[0,45,90,135,180,225,270,315].map(a=>(
+            <div key={a} style={{position:'absolute',width:s*0.07,height:s*0.15,background:'#F59E0B',borderRadius:3,top:'50%',left:'50%',transformOrigin:'0 0',transform:'rotate('+a+'deg) translateX(-50%) translateY(-'+(s*0.35)+'px)'}}/>
+          ))}
+        </div>
       </div>
     );
     if(type==='partly') return(
@@ -404,7 +378,7 @@ function HomeScreen({navigate,users}){
         <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',padding:'0 24px 32px'}}>
 
           {/* Weather + Time card */}
-          <div style={{background:'rgba(255,255,255,0.65)',backdropFilter:'blur(16px)',border:'1.5px solid rgba(255,255,255,0.9)',borderRadius:24,padding:'20px 24px',marginBottom:20,boxShadow:'0 4px 24px rgba(15,23,42,0.08)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{background:'rgba(255,255,255,0.65)',backdropFilter:'blur(16px)',border:'1.5px solid rgba(255,255,255,0.9)',borderRadius:24,padding:'20px 24px',marginBottom:20,boxShadow:'0 4px 24px rgba(15,23,42,0.08)',display:'flex',alignItems:'center',justifyContent:'space-between',overflow:'hidden'}}>
             <div>
               <div style={{color:C.sub,fontSize:13,marginBottom:2}}>{greeting}</div>
               <div style={{color:C.txt,fontWeight:800,fontSize:32,letterSpacing:'-1px',lineHeight:1}}>
@@ -787,20 +761,20 @@ function UsePartScreen({parts,users,images,navigate,toast}){
           <div style={{...card,marginBottom:14}}>
             <p style={{color:'#94A3B8',fontSize:11,fontWeight:700,letterSpacing:'.5px',textTransform:'uppercase',margin:'0 0 12px'}}>Parts to use ({items.length})</p>
             {items.map((it,idx)=>(
-              <div key={it.id} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 0',borderBottom:idx<items.length-1?'1px solid #F1F5F9':'none'}}>
+              <div key={it.id} style={{display:'flex',alignItems:'center',gap:16,padding:'14px 0',borderBottom:idx<items.length-1?'1px solid #F1F5F9':'none'}}>
                 {(images&&images[it.part.partCode])
-                  ?<img src={images[it.part.partCode]} style={{width:56,height:56,objectFit:'cover',borderRadius:8,flexShrink:0,border:'1.5px solid #E2E8F0'}}/>
-                  :<div style={{width:56,height:56,background:'#F1F5F9',borderRadius:8,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22}}>📦</div>}
-                <div style={{flex:1}}>
-                  <div style={{fontWeight:700,color:C.txt,fontSize:14}}>{it.part.partName}</div>
-                  <div style={{color:C.sub,fontSize:12}}>{it.part.partCode} · Bin: {it.part.binNumber}</div>
-                  <div style={{fontSize:12,color:it.part.currentStock<=it.part.minimumStock?C.red:C.green}}>In stock: {it.part.currentStock}</div>
-                </div>
-                <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <button onClick={()=>setQty(it.id,it.qty-1)} style={{...btn,background:'#F1F5F9',color:C.txt,width:32,height:32,padding:0,fontSize:16}}>−</button>
-                  <span style={{fontWeight:700,fontSize:16,minWidth:24,textAlign:'center'}}>{it.qty}</span>
-                  <button onClick={()=>setQty(it.id,it.qty+1)} style={{...btn,background:'#F1F5F9',color:C.txt,width:32,height:32,padding:0,fontSize:16}}>+</button>
-                  <button onClick={()=>removeItem(it.id)} style={{...btn,background:'#FEF2F2',color:C.red,border:'1px solid #FEE2E2',width:32,height:32,padding:0,marginLeft:4}}>✕</button>
+                  ?<img src={images[it.part.partCode]} style={{width:100,height:100,objectFit:'cover',borderRadius:14,flexShrink:0,border:'1.5px solid #E2E8F0',boxShadow:'0 2px 8px rgba(15,23,42,.08)'}}/>
+                  :<div style={{width:100,height:100,background:'#F1F5F9',borderRadius:14,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:36}}>📦</div>}
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:700,color:C.txt,fontSize:16,marginBottom:4,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{it.part.partName}</div>
+                  <div style={{color:C.sub,fontSize:13,marginBottom:4}}>{it.part.partCode} · Bin: {it.part.binNumber}</div>
+                  <div style={{fontSize:13,fontWeight:600,color:it.part.currentStock<=it.part.minimumStock?C.red:C.green}}>In stock: {it.part.currentStock} (min: {it.part.minimumStock})</div>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginTop:10}}>
+                    <button onClick={()=>setQty(it.id,it.qty-1)} style={{...btn,background:'#F1F5F9',color:C.txt,width:36,height:36,padding:0,fontSize:18}}>−</button>
+                    <span style={{fontWeight:800,fontSize:20,minWidth:32,textAlign:'center'}}>{it.qty}</span>
+                    <button onClick={()=>setQty(it.id,it.qty+1)} style={{...btn,background:'#F1F5F9',color:C.txt,width:36,height:36,padding:0,fontSize:18}}>+</button>
+                    <button onClick={()=>removeItem(it.id)} style={{...btn,background:'#FEF2F2',color:C.red,border:'1px solid #FEE2E2',width:36,height:36,padding:0,marginLeft:8}}>✕</button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -1258,6 +1232,35 @@ function App(){
   const [toasts,setToasts]=useState([]);
   const [loaded,setLoaded]=useState(false);
   const [pinOk,setPinOk]=useState(false);
+  const [weather,setWeather]=useState(null);
+
+  // Fetch weather at App level — persists across navigation, updates every 10 mins
+  useEffect(()=>{
+    const fetchWeather=async()=>{
+      try{
+        const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=51.5085&longitude=-0.1257&current=temperature_2m,weathercode,windspeed_10m&timezone=Europe/London');
+        const d=await r.json();
+        const code=d.current.weathercode;
+        const temp=Math.round(d.current.temperature_2m);
+        const wind=Math.round(d.current.windspeed_10m);
+        let condition,emoji;
+        if(code===0){condition='Clear Sky';emoji='sunny';}
+        else if(code<=2){condition='Partly Cloudy';emoji='partly';}
+        else if(code<=3){condition='Overcast';emoji='cloudy';}
+        else if(code<=49){condition='Foggy';emoji='foggy';}
+        else if(code<=59){condition='Drizzle';emoji='drizzle';}
+        else if(code<=69){condition='Rainy';emoji='rain';}
+        else if(code<=79){condition='Snowy';emoji='snow';}
+        else if(code<=82){condition='Rain Showers';emoji='rain';}
+        else if(code<=86){condition='Snow Showers';emoji='snow';}
+        else{condition='Thunderstorm';emoji='storm';}
+        setWeather({temp,condition,emoji,wind});
+      }catch(e){console.error('weather',e);}
+    };
+    fetchWeather();
+    const t=setInterval(fetchWeather,10*60*1000);
+    return()=>clearInterval(t);
+  },[]);
 
   useEffect(()=>{
     let unP=null,unU=null;
@@ -1326,7 +1329,7 @@ function App(){
 
   if(!pinOk)return <PinScreen onUnlock={()=>setPinOk(true)}/>;
 
-  const p={parts,users,images,setImages,navigate:nav,toast};
+  const p={parts,users,images,setImages,navigate:nav,toast,weather};
 
   return(
     <div style={{fontFamily:"'Inter',system-ui,sans-serif"}}>
