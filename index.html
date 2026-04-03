@@ -836,17 +836,11 @@ function AddMenu({navigate}){
 function RestockScreen({parts,images,navigate,toast}){
   const [items,setItems]=useState([]);
   const [busy,setBusy]=useState(false);
-  const [restockVal,setRestockVal]=useState('');
   const scanRef=useRef(null);
 
   useEffect(()=>{
     setTimeout(()=>scanRef.current&&scanRef.current.focus(),100);
   },[]);
-
-  // Keep submitRef current so handleScan can call it
-  useEffect(()=>{
-    submitRef.current=submit;
-  });
 
   const handleScan=val=>{
     const code=val.trim();
