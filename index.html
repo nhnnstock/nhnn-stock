@@ -255,7 +255,7 @@ function PartSearch({parts,images,label,onSelect}){
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{color:C.txt,fontSize:15,fontWeight:700,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.partName}</div>
                   <div style={{color:C.sub,fontSize:13,marginTop:3}}>{p.partCode} · Bin: {p.binNumber} · {p.supplier}</div>
-                  <div style={{color:C.sub,fontSize:12,marginTop:2}}>Min: {p.minimumStock}{p.maxStock>0?' · Max: '+p.maxStock:''}{p.maxStock>0&&p.currentStock>=p.maxStock?' ⚠ At max':''}</div>
+                  <div style={{color:C.sub,fontSize:12,marginTop:2}}>Min: {p.minimumStock} · Max: {p.maxStock>0?p.maxStock:'—'}{p.maxStock>0&&p.currentStock>=p.maxStock?' ⚠ At max':''}</div>
                   <span style={{display:'inline-block',marginTop:4,fontSize:11,fontWeight:600,padding:'2px 8px',borderRadius:4,
                     background:p.currentStock===0?'#FEF2F2':p.currentStock<=p.minimumStock?'#FFFBEB':'#F0FDF4',
                     color:p.currentStock===0?C.red:p.currentStock<=p.minimumStock?'#B45309':'#16A34A'}}>
@@ -912,7 +912,7 @@ function RestockScreen({parts,images,navigate,toast}){
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontWeight:700,color:C.txt,fontSize:16,marginBottom:4,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{it.part.partName}</div>
                   <div style={{color:C.sub,fontSize:13,marginBottom:4}}>{it.part.partCode} · Bin: {it.part.binNumber}</div>
-                  <div style={{color:C.green,fontSize:13,fontWeight:600}}>Current: {it.part.currentStock} → After: {it.part.currentStock+it.qty}{it.part.maxStock>0&&it.part.currentStock+it.qty>=it.part.maxStock?' ⚠ At max':''}  {it.part.maxStock>0?'(max: '+it.part.maxStock+')':''}</div>
+                  <div style={{color:C.green,fontSize:13,fontWeight:600}}>Current: {it.part.currentStock} → After: {it.part.currentStock+it.qty} · Max: {it.part.maxStock>0?it.part.maxStock:'—'}{it.part.maxStock>0&&it.part.currentStock+it.qty>=it.part.maxStock?' ⚠ At max':''}</div>
                   <div style={{display:'flex',alignItems:'center',gap:8,marginTop:10}}>
                     <button onClick={()=>setQty(it.id,it.qty-1)} style={{...btn,background:'#F1F5F9',color:C.txt,width:36,height:36,padding:0,fontSize:18}}>−</button>
                     <span style={{fontWeight:800,fontSize:20,minWidth:32,textAlign:'center'}}>{it.qty}</span>
