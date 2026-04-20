@@ -25,6 +25,13 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:#F0F2F
 input,select,textarea,button{font-family:inherit}
 input:focus,select:focus,textarea:focus{outline:none;border-color:#2563EB!important;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:4px}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes rain{0%{transform:rotate(15deg) translateY(-10px);opacity:0}50%{opacity:1}100%{transform:rotate(15deg) translateY(10px);opacity:0}}
+@keyframes snow{0%{transform:translateY(-5px) rotate(0deg);opacity:0}50%{opacity:1}100%{transform:translateY(10px) rotate(180deg);opacity:0}}
+@keyframes flash{0%,100%{opacity:0.3}50%{opacity:1}}
+@keyframes fog{0%,100%{transform:translateX(0);opacity:0.6}50%{transform:translateX(8px);opacity:1}}
 </style>
 </head>
 <body>
@@ -426,15 +433,7 @@ function HomeScreen({navigate,users,weather}){
         <p style={{color:'#94A3B8',fontSize:11,textAlign:'center',paddingBottom:16}}>NHNN Stock Control v1.0</p>
       </div>
 
-      <style>{`
-        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
-        @keyframes rain { 0%{transform:rotate(15deg) translateY(-10px);opacity:0} 50%{opacity:1} 100%{transform:rotate(15deg) translateY(10px);opacity:0} }
-        @keyframes snow { 0%{transform:translateY(-5px) rotate(0deg);opacity:0} 50%{opacity:1} 100%{transform:translateY(10px) rotate(180deg);opacity:0} }
-        @keyframes flash { 0%,100%{opacity:0.3} 50%{opacity:1} }
-        @keyframes fog { 0%,100%{transform:translateX(0);opacity:0.6} 50%{transform:translateX(8px);opacity:1} }
-      `}</style>
+      <style>{"@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes rain{0%{transform:rotate(15deg) translateY(-10px);opacity:0}50%{opacity:1}100%{transform:rotate(15deg) translateY(10px);opacity:0}}@keyframes snow{0%{transform:translateY(-5px) rotate(0deg);opacity:0}50%{opacity:1}100%{transform:translateY(10px) rotate(180deg);opacity:0}}@keyframes flash{0%,100%{opacity:0.3}50%{opacity:1}}@keyframes fog{0%,100%{transform:translateX(0);opacity:0.6}50%{transform:translateX(8px);opacity:1}}"}</style>
     </div>
   );
 }
@@ -1228,23 +1227,24 @@ function ExportScreen({parts,navigate,toast}){
 
 /* ── Snake Game ── */
 function SnakeGame({onClose}){
-  const [phase,setPhase]=useState('name'); // name, playing, dead
+  const [phase,setPhase]=useState('name');
   const [playerName,setPlayerName]=useState('');
   const [score,setScore]=useState(0);
   const [leaderboard,setLeaderboard]=useState([]);
   const [snake,setSnake]=useState([{x:10,y:10}]);
   const [food,setFood]=useState({x:5,y:5});
-  const [dir,setDir]=useState({x:1,y:0});
-  const [gameOver,setGameOver]=useState(false);
   const dirRef=useRef({x:1,y:0});
   const snakeRef=useRef([{x:10,y:10}]);
   const foodRef=useRef({x:5,y:5});
   const scoreRef=useRef(0);
   const loopRef=useRef(null);
   const touchRef=useRef(null);
-  const COLS=20, ROWS=20, CELL=18;
+  const COLS=25, ROWS=22, CELL=22;
 
-  // Load leaderboard
+  // Hospital themed food items
+  const FOODS=['💊','🩺','💉','🩹','🧬','❤️','🫀','🧪'];
+  const foodTypeRef=useRef(FOODS[0]);
+
   useEffect(()=>{
     const unsub=db.collection('nhnn').doc('snake_leaderboard').onSnapshot(s=>{
       if(s.exists)setLeaderboard(s.data().v||[]);
@@ -1256,11 +1256,12 @@ function SnakeGame({onClose}){
     let f;
     do{ f={x:Math.floor(Math.random()*COLS),y:Math.floor(Math.random()*ROWS)}; }
     while(s.some(p=>p.x===f.x&&p.y===f.y));
+    foodTypeRef.current=FOODS[Math.floor(Math.random()*FOODS.length)];
     return f;
   };
 
   const startGame=()=>{
-    const init=[{x:10,y:10}];
+    const init=[{x:12,y:11},{x:11,y:11},{x:10,y:11}];
     const initFood=randFood(init);
     snakeRef.current=init;
     foodRef.current=initFood;
@@ -1268,24 +1269,24 @@ function SnakeGame({onClose}){
     scoreRef.current=0;
     setSnake(init);
     setFood(initFood);
-    setDir({x:1,y:0});
     setScore(0);
-    setGameOver(false);
     setPhase('playing');
   };
 
-  // Game loop
   useEffect(()=>{
     if(phase!=='playing')return;
-    const speed=Math.max(80, 200-scoreRef.current*5);
+    const speed=Math.max(70,200-Math.floor(scoreRef.current/10)*8);
     loopRef.current=setInterval(()=>{
       const s=[...snakeRef.current];
       const d=dirRef.current;
-      const head={x:s[0].x+d.x, y:s[0].y+d.y};
-      // Wall collision
-      if(head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS||s.some(p=>p.x===head.x&&p.y===head.y)){
+      // Wrap around walls instead of dying
+      const head={
+        x:(s[0].x+d.x+COLS)%COLS,
+        y:(s[0].y+d.y+ROWS)%ROWS
+      };
+      // Only self-collision kills
+      if(s.some(p=>p.x===head.x&&p.y===head.y)){
         clearInterval(loopRef.current);
-        setGameOver(true);
         setPhase('dead');
         saveScore(scoreRef.current);
         return;
@@ -1296,13 +1297,13 @@ function SnakeGame({onClose}){
         setScore(scoreRef.current);
         const newFood=randFood(newSnake);
         foodRef.current=newFood;
-        setFood(newFood);
+        setFood({...newFood});
       }else{
         newSnake.pop();
       }
       snakeRef.current=newSnake;
       setSnake([...newSnake]);
-    }, speed);
+    },speed);
     return()=>clearInterval(loopRef.current);
   },[phase,score]);
 
@@ -1313,11 +1314,10 @@ function SnakeGame({onClose}){
       const existing=current.findIndex(e=>e.name===playerName);
       let updated;
       if(existing!==-1){
-        if(finalScore>current[existing].score){
-          updated=[...current];
+        updated=[...current];
+        if(finalScore>current[existing].score)
           updated[existing]={name:playerName,score:finalScore,date:new Date().toLocaleDateString('en-GB')};
-        } else { updated=current; }
-      } else {
+      }else{
         updated=[...current,{name:playerName,score:finalScore,date:new Date().toLocaleDateString('en-GB')}];
       }
       updated.sort((a,b)=>b.score-a.score);
@@ -1325,7 +1325,6 @@ function SnakeGame({onClose}){
     }catch(e){console.error('saveScore',e);}
   };
 
-  // Keyboard controls
   useEffect(()=>{
     if(phase!=='playing')return;
     const handle=e=>{
@@ -1334,17 +1333,15 @@ function SnakeGame({onClose}){
       if(newDir){
         e.preventDefault();
         const cur=dirRef.current;
-        if(newDir.x===0&&cur.x!==0)return;
-        if(newDir.y===0&&cur.y!==0)return;
-        dirRef.current=newDir;
-        setDir(newDir);
+        if(newDir.x!==-cur.x||newDir.y!==-cur.y){
+          dirRef.current=newDir;
+        }
       }
     };
     window.addEventListener('keydown',handle);
     return()=>window.removeEventListener('keydown',handle);
   },[phase]);
 
-  // Touch/swipe controls
   const handleTouchStart=e=>{ touchRef.current={x:e.touches[0].clientX,y:e.touches[0].clientY}; };
   const handleTouchEnd=e=>{
     if(!touchRef.current||phase!=='playing')return;
@@ -1352,43 +1349,53 @@ function SnakeGame({onClose}){
     const dy=e.changedTouches[0].clientY-touchRef.current.y;
     const cur=dirRef.current;
     if(Math.abs(dx)>Math.abs(dy)){
-      const newDir=dx>0?{x:1,y:0}:{x:-1,y:0};
-      if(cur.y!==0){dirRef.current=newDir;setDir(newDir);}
-    } else {
-      const newDir=dy>0?{x:0,y:1}:{x:0,y:-1};
-      if(cur.x!==0){dirRef.current=newDir;setDir(newDir);}
+      const nd=dx>0?{x:1,y:0}:{x:-1,y:0};
+      if(nd.x!==-cur.x)dirRef.current=nd;
+    }else{
+      const nd=dy>0?{x:0,y:1}:{x:0,y:-1};
+      if(nd.y!==-cur.y)dirRef.current=nd;
     }
     touchRef.current=null;
   };
 
+  const boardW=COLS*CELL;
+  const boardH=ROWS*CELL;
+
   return(
-    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',padding:20}}>
-      <div style={{background:'#1a1a2e',borderRadius:24,padding:24,maxWidth:420,width:'100%',boxShadow:'0 20px 60px rgba(0,0,0,0.5)',border:'1px solid #16213e'}}>
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.9)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',padding:16,overflowY:'auto'}}>
+      <div style={{background:'#0a1628',borderRadius:24,padding:24,width:'100%',maxWidth:620,boxShadow:'0 20px 60px rgba(0,0,0,0.7)',border:'1px solid #1e3a5f'}}>
+
+        {/* Header */}
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-          <span style={{color:'#00ff88',fontWeight:800,fontSize:18,letterSpacing:1}}>🐍 SNAKE</span>
-          <button onClick={onClose} style={{background:'none',border:'none',color:'#666',fontSize:22,cursor:'pointer'}}>✕</button>
+          <div>
+            <div style={{color:'#38bdf8',fontWeight:800,fontSize:20,letterSpacing:1}}>🏥 MEDIC SNAKE</div>
+            <div style={{color:'#475569',fontSize:11,marginTop:2}}>Collect medicine · Don't eat yourself · Walls wrap around</div>
+          </div>
+          <button onClick={onClose} style={{background:'none',border:'none',color:'#475569',fontSize:24,cursor:'pointer',lineHeight:1}}>✕</button>
         </div>
 
         {phase==='name'&&(
           <div>
-            <p style={{color:'#aaa',fontSize:14,marginBottom:16}}>Enter your name to start</p>
-            <input value={playerName} onChange={e=>setPlayerName(e.target.value)}
-              onKeyDown={e=>e.key==='Enter'&&playerName.trim()&&startGame()}
-              placeholder="Your name..." autoFocus
-              style={{width:'100%',padding:'12px 16px',borderRadius:10,border:'1px solid #333',background:'#0f0f23',color:'#fff',fontSize:15,boxSizing:'border-box',marginBottom:12,fontFamily:'inherit'}}/>
-            <button onClick={()=>playerName.trim()&&startGame()}
-              style={{width:'100%',padding:'12px',borderRadius:10,border:'none',background:'#00ff88',color:'#000',fontWeight:700,fontSize:15,cursor:'pointer',fontFamily:'inherit'}}>
-              Play →
-            </button>
+            <div style={{background:'#0f2240',borderRadius:14,padding:20,marginBottom:16,border:'1px solid #1e3a5f'}}>
+              <p style={{color:'#94a3b8',fontSize:14,marginBottom:12}}>Enter your name to start playing</p>
+              <input value={playerName} onChange={e=>setPlayerName(e.target.value)}
+                onKeyDown={e=>e.key==='Enter'&&playerName.trim()&&startGame()}
+                placeholder="Your name..." autoFocus
+                style={{width:'100%',padding:'12px 16px',borderRadius:10,border:'1px solid #1e3a5f',background:'#0a1628',color:'#fff',fontSize:15,boxSizing:'border-box',marginBottom:12,fontFamily:'inherit',outline:'none'}}/>
+              <button onClick={()=>playerName.trim()&&startGame()}
+                style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#0ea5e9,#2563eb)',color:'#fff',fontWeight:700,fontSize:15,cursor:'pointer',fontFamily:'inherit'}}>
+                Start Game →
+              </button>
+            </div>
             {leaderboard.length>0&&(
-              <div style={{marginTop:20}}>
-                <p style={{color:'#666',fontSize:12,letterSpacing:1,textTransform:'uppercase',marginBottom:10}}>Leaderboard</p>
-                {leaderboard.slice(0,5).map((e,i)=>(
-                  <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid #222',alignItems:'center'}}>
-                    <span style={{color:i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#666',fontSize:13,fontWeight:700}}>{i+1}.</span>
-                    <span style={{color:'#fff',fontSize:13,flex:1,marginLeft:10}}>{e.name}</span>
-                    <span style={{color:'#00ff88',fontWeight:700,fontSize:14}}>{e.score}</span>
-                    <span style={{color:'#444',fontSize:11,marginLeft:10}}>{e.date}</span>
+              <div style={{background:'#0f2240',borderRadius:14,padding:16,border:'1px solid #1e3a5f'}}>
+                <p style={{color:'#475569',fontSize:11,letterSpacing:1,textTransform:'uppercase',marginBottom:12}}>🏆 Hall of Fame</p>
+                {leaderboard.slice(0,8).map((e,i)=>(
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'7px 0',borderBottom:i<leaderboard.length-1?'1px solid #1e3a5f':'none'}}>
+                    <span style={{fontSize:16}}>{i===0?'🥇':i===1?'🥈':i===2?'🥉':'💊'}</span>
+                    <span style={{color:'#e2e8f0',fontSize:14,flex:1}}>{e.name}</span>
+                    <span style={{color:'#38bdf8',fontWeight:700,fontSize:15}}>{e.score}</span>
+                    <span style={{color:'#334155',fontSize:11}}>{e.date}</span>
                   </div>
                 ))}
               </div>
@@ -1398,44 +1405,66 @@ function SnakeGame({onClose}){
 
         {phase==='playing'&&(
           <div>
-            <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}>
-              <span style={{color:'#aaa',fontSize:13}}>{playerName}</span>
-              <span style={{color:'#00ff88',fontWeight:700,fontSize:16}}>Score: {score}</span>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+              <span style={{color:'#94a3b8',fontSize:13}}>👤 {playerName}</span>
+              <span style={{color:'#38bdf8',fontWeight:800,fontSize:18}}>Score: {score}</span>
+              <span style={{color:'#475569',fontSize:12}}>Level {Math.floor(score/50)+1}</span>
             </div>
-            <div style={{position:'relative',width:COLS*CELL,height:ROWS*CELL,background:'#0f0f23',border:'2px solid #16213e',borderRadius:8,overflow:'hidden',cursor:'none',touchAction:'none'}}
+            <div style={{position:'relative',width:boardW,height:boardH,background:'#060f1e',border:'2px solid #1e3a5f',borderRadius:12,overflow:'hidden',touchAction:'none',maxWidth:'100%',margin:'0 auto'}}
               onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+              {/* Grid dots */}
+              {Array.from({length:COLS*ROWS}).map((_,i)=>(
+                <div key={i} style={{position:'absolute',left:(i%COLS)*CELL+CELL/2-1,top:Math.floor(i/COLS)*CELL+CELL/2-1,width:2,height:2,borderRadius:'50%',background:'#38bdf8',opacity:0.08}}/>
+              ))}
               {/* Food */}
-              <div style={{position:'absolute',left:food.x*CELL,top:food.y*CELL,width:CELL,height:CELL,display:'flex',alignItems:'center',justifyContent:'center',fontSize:CELL-2}}>🍎</div>
+              <div style={{position:'absolute',left:food.x*CELL,top:food.y*CELL,width:CELL,height:CELL,display:'flex',alignItems:'center',justifyContent:'center',fontSize:CELL-4,lineHeight:1}}>
+                {foodTypeRef.current}
+              </div>
               {/* Snake */}
               {snake.map((p,i)=>(
-                <div key={i} style={{position:'absolute',left:p.x*CELL+1,top:p.y*CELL+1,width:CELL-2,height:CELL-2,
-                  background:i===0?'#00ff88':'#00cc66',borderRadius:i===0?6:3,
-                  boxShadow:i===0?'0 0 8px #00ff88':undefined}}/>
+                <div key={i} style={{
+                  position:'absolute',left:p.x*CELL+1,top:p.y*CELL+1,
+                  width:CELL-2,height:CELL-2,
+                  background:i===0?'#38bdf8':i<3?'#0ea5e9':'#0369a1',
+                  borderRadius:i===0?8:4,
+                  boxShadow:i===0?'0 0 10px #38bdf8':undefined,
+                  display:i===0?'flex':'block',
+                  alignItems:'center',justifyContent:'center',
+                  fontSize:10,
+                }}>{i===0?'+':''}</div>
               ))}
             </div>
-            <p style={{color:'#444',fontSize:11,textAlign:'center',marginTop:8}}>Arrow keys or swipe to move</p>
+            <p style={{color:'#334155',fontSize:11,textAlign:'center',marginTop:8}}>Arrow keys or swipe · Walls wrap around · Don't eat yourself!</p>
           </div>
         )}
 
         {phase==='dead'&&(
-          <div style={{textAlign:'center'}}>
-            <div style={{fontSize:40,marginBottom:8}}>💀</div>
-            <p style={{color:'#ff4466',fontWeight:800,fontSize:20,marginBottom:4}}>Game Over!</p>
-            <p style={{color:'#00ff88',fontSize:28,fontWeight:800,marginBottom:4}}>{score}</p>
-            <p style={{color:'#666',fontSize:13,marginBottom:20}}>{playerName}</p>
-            <div style={{marginBottom:20}}>
-              <p style={{color:'#666',fontSize:12,letterSpacing:1,textTransform:'uppercase',marginBottom:10}}>Leaderboard</p>
-              {leaderboard.slice(0,5).map((e,i)=>(
-                <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid #222',alignItems:'center',background:e.name===playerName&&e.score===score?'rgba(0,255,136,0.05)':'transparent',borderRadius:4,paddingLeft:4}}>
-                  <span style={{color:i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#666',fontSize:13,fontWeight:700}}>{i+1}.</span>
-                  <span style={{color:e.name===playerName?'#00ff88':'#fff',fontSize:13,flex:1,marginLeft:10}}>{e.name}</span>
-                  <span style={{color:'#00ff88',fontWeight:700,fontSize:14}}>{e.score}</span>
+          <div>
+            <div style={{textAlign:'center',padding:'16px 0',marginBottom:16}}>
+              <div style={{fontSize:48,marginBottom:8}}>🚑</div>
+              <p style={{color:'#ef4444',fontWeight:800,fontSize:22,marginBottom:4}}>You ate yourself!</p>
+              <p style={{color:'#38bdf8',fontSize:36,fontWeight:800,marginBottom:2}}>{score}</p>
+              <p style={{color:'#475569',fontSize:13}}>points · {playerName}</p>
+            </div>
+            <div style={{background:'#0f2240',borderRadius:14,padding:16,border:'1px solid #1e3a5f',marginBottom:16}}>
+              <p style={{color:'#475569',fontSize:11,letterSpacing:1,textTransform:'uppercase',marginBottom:12}}>🏆 Hall of Fame</p>
+              {leaderboard.slice(0,8).map((e,i)=>(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'7px 0',borderBottom:i<Math.min(leaderboard.length,8)-1?'1px solid #1e3a5f':'none',background:e.name===playerName?'rgba(56,189,248,0.05)':'transparent',borderRadius:4,paddingLeft:4}}>
+                  <span style={{fontSize:16}}>{i===0?'🥇':i===1?'🥈':i===2?'🥉':'💊'}</span>
+                  <span style={{color:e.name===playerName?'#38bdf8':'#e2e8f0',fontSize:14,flex:1,fontWeight:e.name===playerName?700:400}}>{e.name}</span>
+                  <span style={{color:'#38bdf8',fontWeight:700,fontSize:15}}>{e.score}</span>
                 </div>
               ))}
             </div>
             <div style={{display:'flex',gap:10}}>
-              <button onClick={startGame} style={{flex:1,padding:'12px',borderRadius:10,border:'none',background:'#00ff88',color:'#000',fontWeight:700,fontSize:15,cursor:'pointer',fontFamily:'inherit'}}>Play Again</button>
-              <button onClick={onClose} style={{flex:1,padding:'12px',borderRadius:10,border:'1px solid #333',background:'transparent',color:'#aaa',fontWeight:700,fontSize:15,cursor:'pointer',fontFamily:'inherit'}}>Exit</button>
+              <button onClick={startGame}
+                style={{flex:1,padding:'13px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#0ea5e9,#2563eb)',color:'#fff',fontWeight:700,fontSize:15,cursor:'pointer',fontFamily:'inherit'}}>
+                Play Again
+              </button>
+              <button onClick={onClose}
+                style={{flex:1,padding:'13px',borderRadius:10,border:'1px solid #1e3a5f',background:'transparent',color:'#94a3b8',fontWeight:700,fontSize:15,cursor:'pointer',fontFamily:'inherit'}}>
+                Exit
+              </button>
             </div>
           </div>
         )}
